@@ -694,6 +694,7 @@ function Coordinate(x = 0, y = 0) {
 
 function Display(set, imgWidth = 300) {
     const container = document.createElement("div");
+    container.style.overflow = "auto";
     container.style.height = "400px";
     const wrapper = document.createElement("div");
     wrapper.style.outline = "1px gray solid";
