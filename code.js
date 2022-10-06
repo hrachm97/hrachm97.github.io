@@ -1,6 +1,9 @@
-function FileInput(set) {
+function FileInput(set, shotItem) {
     
     const container = document.createElement("input");
+    container.style.outline = "1px solid gray";
+    container.style.padding = "2px";
+    container.style.marginTop = "2px";
     container.type = "file";
     container.style.width = "200px";
     container.style.display = "inline-block";
@@ -8,24 +11,24 @@ function FileInput(set) {
     container.style.marginBottom = "10px";
 
     container.onchange = () => {
-        this.srcFile = container.files[0];
-        set(this.srcFile);
-    }
-    this.getContainer = () => {
-        return container;
+        set(
+            container.files[0], 
+            shotItem ? shotItem.type : undefined, 
+            shotItem ? shotItem.align : undefined);
     }
 
-    return this;
+    return container;
 }
 
 function Type(set) {
     const container = document.createElement("div");
-    container.style.display = "inline-block";
+    container.style.display = "block";
     container.style.position = "relative";
     container.style.marginBottom = "10px";
     container.innerHTML = "Type: ";
 
     const input = document.createElement("select");
+    input.className = "shotType";
     input.innerHTML = `
         <option value=1>Full</option>
         <option value=2>Medium</option>
@@ -57,6 +60,7 @@ function Align(set) {
     centerize.innerHTML = "centerize";
     
     const input = document.createElement("input");
+    input.className = "alignSlider";
     input.type = "range";
     input.style.margin = "0px 10px";
 
@@ -88,6 +92,7 @@ function Align(set) {
     
     const outside = document.createElement("input");
     outside.type = "checkbox";
+    outside.className = "outside";
     outside.style.margin = "0px 10px";
     
     const range = document.createElement("div");
@@ -110,7 +115,7 @@ function Align(set) {
 
 function Touch(setTouch) {
     const container = document.createElement("div");
-    container.style.display = "inline-block";
+    container.style.display = "block";
     container.style.position = "relative";
     container.style.marginBottom = "10px";
     container.innerHTML = "Touch: ";
@@ -119,6 +124,7 @@ function Touch(setTouch) {
     button.innerHTML = "Set";
 
     const value = document.createElement("span");
+    value.className = "touch";
 
     container.appendChild(button);
     container.appendChild(value);
@@ -130,6 +136,44 @@ function Touch(setTouch) {
     return container;
 }
 
+function TextItem(srcText = "", number = 0, _color = "#ffffff", placeholder = "type text...") {
+    const input = document.createElement("input");
+    input.className = "srcText";
+    input.style.display = "block";
+    input.style.position = "relative";
+    input.type = "text";
+    input.value = srcText;
+    input.placeholder = placeholder;
+
+    const fontSize = document.createElement("input");
+    fontSize.className = "textNum";
+    fontSize.style.display = "inline-block";
+    fontSize.style.position = "relative";
+    fontSize.type = "number";
+    fontSize.value = number;
+    fontSize.style.width = "35px";
+
+    const color = document.createElement("input");
+    color.className = "textColor";
+    color.style.display = "inline-block";
+    color.style.position = "relative";
+    color.type = "color";
+    color.value = _color;
+
+    this.values = [srcText, +number, _color];
+    this.getSrcText = () => {
+        return input;
+    }
+    this.getNum = () => {
+        return fontSize;
+    }
+    this.getColor = () => {
+        return color;
+    }
+
+    return this;
+}
+
 function TextInput(set) {
     const container = document.createElement("form");
     container.style.display = "inline-block";
@@ -137,19 +181,19 @@ function TextInput(set) {
     container.style.marginBottom = "10px";
     container.innerHTML = "Text: ";
 
-    const input = document.createElement("input");
-    input.type = "text";
+    const textItem = new TextItem();
 
     const button = document.createElement("button");
     button.innerHTML = "Add";
 
-    container.appendChild(input);
+    container.appendChild(textItem.getSrcText());
+    container.appendChild(textItem.getNum());
+    container.appendChild(textItem.getColor());
     container.appendChild(button);
     
     container.onsubmit = (e) => {
-        console.log("Type submit");//debug
         e.preventDefault();
-        set(input.value);
+        set(textItem.getSrcText().value, textItem.getNum().value, textItem.getColor().value);
     }
 
     return container;
@@ -164,6 +208,7 @@ function Duration(set, Default = 0) {
     container.innerHTML = "Duration: ";
 
     const input = document.createElement("input");
+    input.className = "duration";
     input.type = "number";
     input.step = 0.1;
     input.value = Default;
@@ -183,11 +228,26 @@ function Duration(set, Default = 0) {
     return container;
 }
 
-function InputItem(rmv, getCoordinate) {
-    this.pos = [0,0];
-    this.text = ["Type something", 22, "#ffffff"];
-    this.typing = false;
-    this.cursor = false;
+function InputItem(rmv, getCoordinate, instance) {
+    let textItem;
+    if(instance instanceof InputItem) {
+        this.pos = instance.pos;
+        textItem = new TextItem(
+            instance.text[0], 
+            instance.text[1],
+            instance.text[2]
+        );
+
+        this.text = textItem.values;
+        this.typing = instance.typing;
+        this.cursor = instance.cursor;
+    } else {
+        this.pos = [0,0];
+        textItem = new TextItem("", 22, "#ffffff", "type input...");
+        this.text = textItem.values;
+        this.typing = false;
+        this.cursor = false;
+    }
 
     this.setPos = (x, y) => {
         this.pos = [+x, +y];
@@ -224,20 +284,6 @@ function InputItem(rmv, getCoordinate) {
 
     const form = document.createElement("form");
 
-    const input = document.createElement("input");
-    input.style.display = "block";
-    input.type = "text";
-    input.value = this.text[0];
-
-    const fontSize = document.createElement("input");
-    fontSize.type = "number";
-    fontSize.value = this.text[1];
-    fontSize.style.width = "35px";
-
-    const color = document.createElement("input");
-    color.type = "color";
-    color.value = this.text[2];
-
     const typing = document.createElement("input");
     const cursor = document.createElement("input");
     typing.type = cursor.type = "checkbox";
@@ -247,9 +293,9 @@ function InputItem(rmv, getCoordinate) {
     const button = document.createElement("button");
     button.innerHTML = "Set";
 
-    form.appendChild(input);
-    form.appendChild(fontSize);
-    form.appendChild(color);
+    form.appendChild(textItem.getSrcText());
+    form.appendChild(textItem.getNum());
+    form.appendChild(textItem.getColor());
     form.appendChild(typing);
     form.appendChild(cursor);
     form.appendChild(button);
@@ -259,14 +305,13 @@ function InputItem(rmv, getCoordinate) {
     container.appendChild(form);
     
     form.onsubmit = (e) => {
-        //debugger;
         e.preventDefault();
-        if(input.value == "") {
+        if(textItem.getSrcText().value == "") {
             rmv(this);
             container.style.display = "none";
             return;
         }
-        this.setText(input.value, fontSize.value, color.value);
+        this.setText(textItem.getSrcText().value, textItem.getNum().value, textItem.getColor().value);
         this.setTyping(typing.checked);
         this.setCursor(cursor.checked);
     }
@@ -280,26 +325,33 @@ function InputItem(rmv, getCoordinate) {
 
 function Inputs(add, rmv, getCoordinate) {
     const container = document.createElement("div");
-    container.style.display = "inline-block";
+    container.style.display = "block";
+    container.style.width = "280px";
     container.style.position = "relative";
     container.style.marginBottom = "10px";
 
     const header = document.createElement("div");
-    container.style.width = "100px";
     header.innerHTML = "Inputs: ";
 
     const button = document.createElement("button");
     button.innerHTML = "Add";
+
+    const scrollBar = document.createElement("div");
+    scrollBar.className = "scrollBar";
+    scrollBar.style.position = "relative";
+    scrollBar.style.overflow = "auto";
+    scrollBar.style.whiteSpace = "nowrap";
 
     header.appendChild(button);
 
     button.onclick = () => {
         let newItem = new InputItem(rmv, getCoordinate);
         add(newItem);
-        container.appendChild(newItem.getContainer());
+        scrollBar.appendChild(newItem.getContainer());
     }
 
     container.appendChild(header);
+    container.appendChild(scrollBar);
 
     return container;
 }
@@ -323,10 +375,18 @@ function selectArea() {
     return container;
 }
 
-function ShotItem(setImg, timeline, getCoordinate) {
-    this.duration = +document.querySelector("audio").currentTime.toFixed(1);
-    this.type = 1;
-    this.align = 0;
+function ShotItem(setImg, timeline, getCoordinate, updateIndexes, instance) {
+    let file = FileInput(setImg, this);
+    
+    this.getFile = () => {
+        return file;
+    }
+    
+    let selected = false;
+    
+    this.isSelected = () => {
+        return selected;
+    }
 
     this.setDuration = (value) => {
         if(!value) this.duration = +document.querySelector("audio").currentTime.toFixed(1);
@@ -335,19 +395,23 @@ function ShotItem(setImg, timeline, getCoordinate) {
     }
     this.setType = (_type) => {
         this.type = +_type;
-        setImg(file.srcFile, this.type, this.align);
+        setImg(file.files[0], this.type, this.align);
     }
     this.setAlign = (_align) => {
         this.align = +_align;
-        setImg(file.srcFile, this.type, this.align);
+        setImg(file.files[0], this.type, this.align);
     }
     this.setTouch = () => {
         this.touch = getCoordinate();
         return this.touch;
     }
-    this.setText = (_text) => {
+    //let textitem;
+    this.setText = (_text, _num, _color) => {
         if(_text === "") delete this.text;
-        else this.text = _text;
+        else {
+            //textitem = new TextItem(_text, _num, _color);
+            this.text = [_text, _num, _color];
+        }
     }
     this.addInput = (_input) => {
         if(this.input === undefined) this.input = [];
@@ -359,55 +423,34 @@ function ShotItem(setImg, timeline, getCoordinate) {
         if(this.input.length === 0) delete this.input;
     }
 
-    let file = new FileInput(setImg);
-    
     const container = document.createElement("div");
-    makeSelectable(container);
-    
-    let selected = false;
-    
-    this.select = () => {
+
+    let terminate = false;
+    this.select = (manual = true) => {
+        for(item of timeline.shots) {
+            if(item.isSelected() && !terminate && item !== this) {
+                terminate = true;
+                item.select();
+            }
+        }
         if(selected) container.style.outlineStyle = "none";
         else {
             container.style.outlineStyle = "solid";
-            setImg(file.srcFile, this.type, this.align);
+            setImg(file.files[0], this.type, this.align);
         }
         selected = !selected;
-    }
-    
-    const clickArea = selectArea();
-    container.appendChild(clickArea);
-    
-    clickArea.onclick = () => {
-        this.select();
+        terminate = false;
     }
 
-    const x = document.createElement("button");
-    x.className = "clearShot";
-    x.innerHTML = 'X';
-    x.style.position = "absolute";
-    x.style.right = "10px";
-
-    const index = document.createElement("h3");
-    index.style.display = "inline";
-    index.style.marginRight = "10px";
-    index.style.position = "relative";
+    this.setIndex = () => {
+        container.querySelector(".index").innerHTML = timeline.shots.indexOf(this) + 1;
+    }
 
     setTimeout(() => {
-        index.innerHTML = timeline.thisIndex(this) + 1;
-    }, 0); // to execute after the construction of the shotitem
+        this.setIndex();
+    }, 0); // to execute after the construction of this object
     
-    setInterval( () => {
-        index.innerHTML = timeline.thisIndex(this) + 1;
-    }, 100)
-
-    x.onclick = () => {
-        timeline.rmvShot(this);
-        container.style.display = "none";
-    }
-
-    container.appendChild(x);
-
+    container.style.display = "inline-block";
     container.style.position = "relative";
     container.style.margin = "10px";
     container.style.padding = "10px";
@@ -415,19 +458,67 @@ function ShotItem(setImg, timeline, getCoordinate) {
     container.className = "shot";
     container.style.width = "280px";
 
+    makeSelectable(container);
+
+    const x = document.createElement("button");
+    x.className = "clearShot";
+    x.innerHTML = 'X';
+    x.style.position = "absolute";
+    x.style.right = "10px";
+    
+    x.onclick = () => {
+        timeline.rmvShot(this);
+        container.style.display = "none";
+        updateIndexes();
+    }
+    
+    const clickArea = selectArea();
+    clickArea.className = "clickArea";
+    container.appendChild(clickArea);
+    
+    clickArea.onclick = () => {
+        this.select();
+    }
+    
+    const index = document.createElement("h3");
+    index.className = "index";
+    index.style.display = "inline";
+    index.style.marginRight = "10px";
+    index.style.position = "relative";
+    
+    this.duration = +document.querySelector("audio").currentTime.toFixed(1);
+    
+    container.appendChild(x);
     container.appendChild(index);
-    container.appendChild(file.getContainer());
+    container.appendChild(file);
     container.appendChild(Type(this.setType));
     container.appendChild(Align(this.setAlign));
     container.appendChild(Touch(this.setTouch));
     container.appendChild(TextInput(this.setText));
-    container.appendChild(Inputs(this.addInput, this.rmvInput, getCoordinate));
+    const inputs = Inputs(this.addInput, this.rmvInput, getCoordinate);
+    container.appendChild(inputs);
     container.appendChild(Duration(this.setDuration, this.duration));
-
-    container.style.display = "inline-block";
 
     this.getContainer = () => {
         return container;
+    }
+
+    if(instance instanceof ShotItem) {
+        this.type = instance.type;
+        this.align = instance.align;
+        if(instance.touch) this.touch = [instance.touch[0], instance.touch[1]];
+        this.text = instance.text;
+        if(instance.input) {
+            for(item of instance.input) {
+                let newItem = new InputItem(this.rmvInput, getCoordinate, item)
+                this.addInput(newItem);
+                inputs.querySelector(".scrollBar").appendChild(newItem.getContainer());
+            }
+        }
+        file.files = instance.getFile().files;
+    } else {
+        this.type = 1;
+        this.align = 0;
     }
 
     return this;
@@ -437,8 +528,12 @@ function Shots(setImg, timeline, addJSONevents, getCoordinate) {
     const container = document.createElement("div");
 
     const header = document.createElement("h3");
-    container.style.height = "100px";
     header.innerHTML = "Shots: ";
+
+    const scrollBar = document.createElement("div");
+    scrollBar.style.position = "relative";
+    scrollBar.style.overflow = "auto";
+    scrollBar.style.whiteSpace = "nowrap";
 
     const button = document.createElement("button");
     button.innerHTML = "<h3>Add</h3>";
@@ -447,14 +542,41 @@ function Shots(setImg, timeline, addJSONevents, getCoordinate) {
 
     header.appendChild(button);
 
+    function updateIndexes() {
+        for(item of timeline.shots) {
+            item.setIndex();
+        }
+    }
+
     button.onclick = () => {
-        let newItem = new ShotItem(setImg, timeline, getCoordinate);
-        addJSONevents(newItem);
+        let newItem;
+        if(timeline.shots.length) {
+            let copyItem;
+            for(item of timeline.shots) {
+                if(item.isSelected()) {
+                    copyItem = item;
+                }
+            }
+            if(!copyItem) copyItem = timeline.shots[timeline.shots.length - 1];
+            newItem = new ShotItem(setImg, timeline, getCoordinate, updateIndexes, copyItem);
+            newItem.getContainer().querySelector(".shotType").value = copyItem.getContainer().querySelector(".shotType").value;
+            newItem.getContainer().querySelector(".alignSlider").value = copyItem.getContainer().querySelector(".alignSlider").value;
+            newItem.getContainer().querySelector(".outside").checked = copyItem.getContainer().querySelector(".outside").checked;
+            newItem.getContainer().querySelector(".touch").innerHTML = copyItem.getContainer().querySelector(".touch").innerHTML;
+            newItem.getContainer().querySelector(".srcText").value = copyItem.getContainer().querySelector(".srcText").value;
+            newItem.getContainer().querySelector(".textNum").value = copyItem.getContainer().querySelector(".textNum").value;
+            newItem.getContainer().querySelector(".textColor").value = copyItem.getContainer().querySelector(".textColor").value;
+        } else {
+            newItem = new ShotItem(setImg, timeline, getCoordinate, updateIndexes);
+        }
+
         timeline.addShot(newItem);
-        container.appendChild(newItem.getContainer());
+        addJSONevents(newItem);
+        scrollBar.appendChild(newItem.getContainer());
     }
 
     container.appendChild(header);
+    container.appendChild(scrollBar);
 
     return container;
 }
@@ -480,12 +602,21 @@ function AudioItem() {
     return this;
 }
 
-function VoiceOver() {
+function VoiceOver(markShot) {
     const container = document.createElement("div");
     const item = new AudioItem();
-    const file = new FileInput(item.set);
+    const file = FileInput(item.set);
+    let id;
+    item.getContainer().onplay = () => {
+        id = setInterval(() => {
+            markShot(item.getContainer().currentTime);
+        },200);
+    }
+    item.getContainer().onpause = () => {
+        clearInterval(id);
+    }
 
-    container.appendChild(file.getContainer());
+    container.appendChild(file);
     container.appendChild(item.getContainer());
     
     return container;
@@ -503,8 +634,18 @@ function Timeline(setImg, data, getCoordinate) {
         this.shots.splice(index, 1);
         return this.shots.length;
     }
-    this.thisIndex = (thisItem) => {
-        return this.shots.indexOf(thisItem);
+
+    let markShot = (time) => {
+        //debugger;
+        let arr = this.shots;
+        for(i in arr) {
+            let start = +i ? arr[i - 1].duration : 0;
+            let end = arr[i].duration;
+
+            if(time >= start && time <= end) {
+                arr[i].select();
+            }
+        }
     }
 
     const container = document.createElement("div");
@@ -519,6 +660,7 @@ function Timeline(setImg, data, getCoordinate) {
     JSONconatiner.style.backgroundColor = "rgb(255,255,255,0.8)";
 
     function addJSONevents(shotItem) {
+        JSONconatiner.innerHTML = JSON.stringify(data);
         shotItem.getContainer().onclick = 
         shotItem.getContainer().onchange = 
         shotItem.getContainer().onsubmit = () => {
@@ -526,7 +668,7 @@ function Timeline(setImg, data, getCoordinate) {
         }
     }
 
-    container.appendChild(VoiceOver());
+    container.appendChild(VoiceOver(markShot));
     container.appendChild(JSONconatiner);
     container.appendChild(Shots(setImg, this, addJSONevents, getCoordinate));
     container.style.marginBottom = "20px";
@@ -550,11 +692,12 @@ function Coordinate(x = 0, y = 0) {
     return this;
 }
 
-function Display(set, imgWidth = 400) {
+function Display(set, imgWidth = 300) {
     const container = document.createElement("div");
-    container.style.minHeight = "200px";
-    container.style.outline = "1px black solid";
-    container.style.overflow = "hidden"; 
+    container.style.height = "400px";
+    const wrapper = document.createElement("div");
+    wrapper.style.outline = "1px gray solid";
+    wrapper.style.overflow = "hidden";
 
     const display = document.createElement("div");
 
@@ -586,7 +729,6 @@ function Display(set, imgWidth = 400) {
     }
     
     img.onclick = (e) => {
-        debugger;
         let rect = e.target.getBoundingClientRect();
         const scale = rect.width / imgWidth;
         let [x,y] = mouse_position([rect.left, rect.top]);
@@ -618,10 +760,11 @@ function Display(set, imgWidth = 400) {
     }
 
     display.appendChild(img);
-    container.appendChild(display);
+    wrapper.appendChild(display);
     zoom.appendChild(minus);
     zoom.appendChild(plus);
-    container.appendChild(zoom);
+    wrapper.appendChild(zoom);
+    container.appendChild(wrapper);
 
     return this;
 }
