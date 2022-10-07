@@ -358,8 +358,8 @@ function Inputs(add, rmv, getCoordinate) {
 
 function makeSelectable(container){
     container.style.position = "relative";
-    container.style.outlineWidth = "2px";
-    container.style.outlineColor = "blue";
+    container.style.outlineWidth = "3px";
+    container.style.outlineColor = "#7777ff";
     container.style.outlineStyle = "none";
 }
 
@@ -454,7 +454,7 @@ function ShotItem(setImg, timeline, getCoordinate, updateIndexes, instance) {
     container.style.position = "relative";
     container.style.margin = "10px";
     container.style.padding = "10px";
-    container.style.backgroundColor = "#eee";
+    container.style.backgroundColor = "#a1a1a1";
     container.className = "shot";
     container.style.width = "280px";
 
@@ -474,6 +474,7 @@ function ShotItem(setImg, timeline, getCoordinate, updateIndexes, instance) {
     
     const clickArea = selectArea();
     clickArea.className = "clickArea";
+    clickArea.style.backgroundColor = "#aaa";
     container.appendChild(clickArea);
     
     clickArea.onclick = () => {
@@ -529,6 +530,7 @@ function Shots(setImg, timeline, addJSONevents, getCoordinate) {
 
     const header = document.createElement("h3");
     header.innerHTML = "Shots: ";
+    header.style.color = "#ffffff";
 
     const scrollBar = document.createElement("div");
     scrollBar.style.position = "relative";
@@ -539,6 +541,9 @@ function Shots(setImg, timeline, addJSONevents, getCoordinate) {
     button.innerHTML = "<h3>Add</h3>";
     button.style.padding = "0px 20px";
     button.style.margin = "0px 10px";
+    button.style.backgroundColor = "#555";
+    button.style.color = "white";
+    button.style.textEmphasisColor = "#000";
 
     header.appendChild(button);
 
@@ -586,6 +591,7 @@ function AudioItem() {
     container.controls = true;
     container.style.width = "95%";
     container.style.display = "block";
+    container.style.colo = "#ccc";
     const source = document.createElement("source");
 
     container.appendChild(source);
@@ -697,7 +703,8 @@ function Display(set, imgWidth = 300) {
     container.style.overflow = "auto";
     container.style.height = "400px";
     const wrapper = document.createElement("div");
-    wrapper.style.outline = "1px gray solid";
+    wrapper.style.minHeight = "100px";
+    wrapper.style.outline = "2px gray solid";
     wrapper.style.overflow = "hidden";
 
     const display = document.createElement("div");
@@ -772,6 +779,7 @@ function Display(set, imgWidth = 300) {
 
 function App() {
     const root = document.querySelector("body");
+    root.style.backgroundColor = "#333333";
 
     let data = {
         shot:[],
