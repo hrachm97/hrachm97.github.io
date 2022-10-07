@@ -774,7 +774,7 @@ function Display(set, scale = 100) {
     img.onclick = (e) => {
         let rect = e.target.getBoundingClientRect();
         let [x,y] = mouse_position([rect.left, rect.top]);
-        set(x / rect.width, y / rect.height);
+        set(x, y);
     }
     
     mockup.style.margin = "6% auto";
