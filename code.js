@@ -359,7 +359,7 @@ function Inputs(add, rmv, getCoordinate) {
 function makeSelectable(container){
     container.style.position = "relative";
     container.style.outlineWidth = "3px";
-    container.style.outlineColor = "#7777ff";
+    container.style.outlineColor = "blue";
     container.style.outlineStyle = "none";
 }
 
