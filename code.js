@@ -533,6 +533,8 @@ function Shots(setImg, timeline, addJSONevents, getCoordinate) {
     header.style.color = "#ffffff";
 
     const scrollBar = document.createElement("div");
+    scrollBar.className = "shotsScroll";
+    //scrollBar.style.transition = "2s";
     scrollBar.style.position = "relative";
     scrollBar.style.overflow = "auto";
     scrollBar.style.whiteSpace = "nowrap";
@@ -578,6 +580,7 @@ function Shots(setImg, timeline, addJSONevents, getCoordinate) {
         timeline.addShot(newItem);
         addJSONevents(newItem);
         scrollBar.appendChild(newItem.getContainer());
+        scrollBar.scrollTo(scrollBar.scrollWidth, 0);
     }
 
     container.appendChild(header);
@@ -608,18 +611,40 @@ function AudioItem() {
     return this;
 }
 
-function VoiceOver(markShot) {
+function VoiceOver(shots, getCurrentShot, workingAreaDuration) {
     const container = document.createElement("div");
     const item = new AudioItem();
     const file = FileInput(item.set);
-    let id;
+    let selectShotID;
+    let scrollID;
+
+    let prevIndex;
+    function trackPlay() {
+        let currentShotIndex = getCurrentShot(item.getContainer().currentTime, true);
+        if(currentShotIndex === false || currentShotIndex === prevIndex) {
+            return
+        }
+        prevIndex = currentShotIndex;
+        let playedPercent = currentShotIndex / (shots.length - 1);
+        let timelineWidth = container.parentNode.querySelector(".shotsScroll").scrollWidth;
+        let width = container.parentNode.querySelector(".shotsScroll").getBoundingClientRect().width;
+        let amount = playedPercent * timelineWidth - width * 2 / 7;
+        container.parentNode.querySelector(".shotsScroll").scrollTo(amount, 0);
+    }
+
     item.getContainer().onplay = () => {
-        id = setInterval(() => {
-            markShot(item.getContainer().currentTime);
+        trackPlay();
+        selectShotID = setInterval(() => {
+            let currentShot = getCurrentShot(item.getContainer().currentTime);
+            if(currentShot) currentShot.select();
         },200);
+        scrollID = setInterval(() => {
+            trackPlay();
+        },2000);
     }
     item.getContainer().onpause = () => {
-        clearInterval(id);
+        clearInterval(selectShotID);
+        clearInterval(scrollID);
     }
 
     container.appendChild(file);
@@ -641,7 +666,11 @@ function Timeline(setImg, data, getCoordinate) {
         return this.shots.length;
     }
 
-    let markShot = (time) => {
+    let workingAreaDuration = () => {
+        return this.shots[this.shots.length - 1] ? this.shots[this.shots.length - 1].duration : 0;
+    }
+
+    let getCurrentShot = (time, getindex = false) => {
         //debugger;
         let arr = this.shots;
         for(i in arr) {
@@ -649,9 +678,10 @@ function Timeline(setImg, data, getCoordinate) {
             let end = arr[i].duration;
 
             if(time >= start && time <= end) {
-                arr[i].select();
+                return getindex ? i : arr[i];
             }
         }
+        if(getindex) return false;
     }
 
     const container = document.createElement("div");
@@ -674,7 +704,7 @@ function Timeline(setImg, data, getCoordinate) {
         }
     }
 
-    container.appendChild(VoiceOver(markShot));
+    container.appendChild(VoiceOver(this.shots, getCurrentShot, workingAreaDuration));
     container.appendChild(JSONconatiner);
     container.appendChild(Shots(setImg, this, addJSONevents, getCoordinate));
     container.style.marginBottom = "20px";
