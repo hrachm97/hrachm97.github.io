@@ -735,6 +735,8 @@ function Display(set, imgWidth = 300) {
     wrapper.style.minHeight = "100px";
     wrapper.style.outline = "2px gray solid";
     wrapper.style.overflow = "hidden";
+    wrapper.style.backgroundImage = "url('alpha.png')";
+    wrapper.style.backgroundSize = "25px 25px";
 
     const display = document.createElement("div");
 
