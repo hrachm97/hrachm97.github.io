@@ -199,7 +199,7 @@ function TextInput(set) {
     return container;
 }
 
-function Duration(set, Default = 0) {
+function Duration(set, init) {
     const container = document.createElement("form");
     //container.style.display = "inline-block";
     container.style.width = "150px";
@@ -210,8 +210,8 @@ function Duration(set, Default = 0) {
     const input = document.createElement("input");
     input.className = "duration";
     input.type = "number";
+    input.value = init;
     input.step = 0.1;
-    input.value = Default;
     input.style.width = "40px"
 
     const button = document.createElement("button");
@@ -219,6 +219,10 @@ function Duration(set, Default = 0) {
 
     container.appendChild(input);
     container.appendChild(button);
+
+    container.setDuration = (value) => {
+        input.value = value;
+    }
     
     container.onsubmit = (e) => {
         e.preventDefault();
@@ -242,7 +246,6 @@ function InputItem(rmv, getCoordinate, instance) {
         this.typing = instance.typing;
         this.cursor = instance.cursor;
     } else {
-        this.pos = [0,0];
         textItem = new TextItem("", 22, "#ffffff", "type input...");
         this.text = textItem.values;
         this.typing = false;
@@ -281,6 +284,7 @@ function InputItem(rmv, getCoordinate, instance) {
     }
 
     const pos = document.createElement("span");
+    if(this.pos) pos.innerHTML = this.pos;
 
     const form = document.createElement("form");
 
@@ -487,8 +491,6 @@ function ShotItem(setImg, timeline, getCoordinate, updateIndexes, instance) {
     index.style.marginRight = "10px";
     index.style.position = "relative";
     
-    this.duration = +document.querySelector("audio").currentTime.toFixed(1);
-    
     container.appendChild(x);
     container.appendChild(index);
     container.appendChild(file);
@@ -498,7 +500,12 @@ function ShotItem(setImg, timeline, getCoordinate, updateIndexes, instance) {
     container.appendChild(TextInput(this.setText));
     const inputs = Inputs(this.addInput, this.rmvInput, getCoordinate);
     container.appendChild(inputs);
-    container.appendChild(Duration(this.setDuration, this.duration));
+    const duration = Duration(this.setDuration, this.duration);
+    container.appendChild(duration);
+
+    this.getDuration = () => {
+        return duration;
+    }
 
     this.getContainer = () => {
         return container;
@@ -574,11 +581,16 @@ function Shots(setImg, timeline, addJSONevents, getCoordinate) {
             newItem.getContainer().querySelector(".srcText").value = copyItem.getContainer().querySelector(".srcText").value;
             newItem.getContainer().querySelector(".textNum").value = copyItem.getContainer().querySelector(".textNum").value;
             newItem.getContainer().querySelector(".textColor").value = copyItem.getContainer().querySelector(".textColor").value;
+            timeline.addShot(newItem);
+            let thisIndex = timeline.shots.indexOf(newItem);
+            timeline.shots[thisIndex - 1].getDuration().setDuration(
+                timeline.shots[thisIndex - 1].setDuration(+document.querySelector("audio").currentTime.toFixed(1))
+            )
         } else {
             newItem = new ShotItem(setImg, timeline, getCoordinate, updateIndexes);
+            timeline.addShot(newItem);
         }
 
-        timeline.addShot(newItem);
         addJSONevents(newItem);
         scrollBar.appendChild(newItem.getContainer());
         scrollBar.scrollTo(scrollBar.scrollWidth, 0);
@@ -696,7 +708,9 @@ function Timeline(setImg, data, getCoordinate) {
     JSONconatiner.style.backgroundColor = "rgb(255,255,255,0.8)";
 
     function addJSONevents(shotItem) {
-        JSONconatiner.innerHTML = JSON.stringify(data);
+        setTimeout(() => {
+            JSONconatiner.innerHTML = JSON.stringify(data);
+        }, 0);
         shotItem.getContainer().onclick = 
         shotItem.getContainer().onchange = 
         shotItem.getContainer().onsubmit = () => {
@@ -773,8 +787,7 @@ function Display(set, scale = 100) {
     
     img.onclick = (e) => {
         let rect = e.target.getBoundingClientRect();
-        let [x,y] = mouse_position([rect.left, rect.top]);
-        set(x, y);
+        set(...mouse_position([rect.left, rect.top]));
     }
     
     mockup.style.margin = "6% auto";
