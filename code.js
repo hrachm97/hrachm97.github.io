@@ -776,7 +776,7 @@ function Display(set, imgWidth = 300) {
     
     display.style.width = +imgWidth + "px";
     display.style.margin = "auto";
-    display.style.paddingTop = "5px";
+    display.style.padding = "40px";
     display.style.transform = "scale(1.5)";
     
     plus.onclick = () => {
