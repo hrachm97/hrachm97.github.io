@@ -689,7 +689,9 @@ function Timeline(setImg, data, getCoordinate) {
     container.className = "timeline";
 
     const JSONconatiner = document.createElement("div");
+
     JSONconatiner.style.margin = "10px";
+    JSONconatiner.style.overflow = "auto";
     JSONconatiner.style.backgroundColor = "rgb(255,255,255,0.8)";
 
     function addJSONevents(shotItem) {
