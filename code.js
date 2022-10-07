@@ -728,21 +728,21 @@ function Coordinate(x = 0, y = 0) {
     return this;
 }
 
-function Display(set, imgWidth = 300) {
+function Display(set, scale = 100) {
     const container = document.createElement("div");
     container.style.overflow = "auto";
     container.style.minHeight = "400px";
     container.style.maxHeight = "700px";
     const wrapper = document.createElement("div");
     wrapper.style.margin = "auto";
-    wrapper.style.minHeight = "100px";
-    wrapper.style.width = (imgWidth + 40) * 16 / 9 + "px";
+    wrapper.style.width = "640px";
+    wrapper.style.height = "360px";
     wrapper.style.outline = "2px gray solid";
     wrapper.style.overflow = "hidden";
     wrapper.style.backgroundImage = "url('alpha.png')";
     wrapper.style.backgroundSize = "25px 25px";
 
-    const display = document.createElement("div");
+    const mockup = document.createElement("div");
 
     const zoom = document.createElement("div");
     zoom.style.position = "absolute";
@@ -773,40 +773,40 @@ function Display(set, imgWidth = 300) {
     
     img.onclick = (e) => {
         let rect = e.target.getBoundingClientRect();
-        const scale = rect.width / imgWidth;
         let [x,y] = mouse_position([rect.left, rect.top]);
-        set(x / scale, y / scale);
+        set(x / rect.width, y / rect.height);
     }
     
-    display.style.width = +imgWidth + "px";
-    display.style.margin = "auto";
-    display.style.padding = "40px";
-    display.style.transform = "scale(1.5)";
+    mockup.style.margin = "6% auto";
+    mockup.style.overflow = "hidden";
+    mockup.style.width = "25%";
+    mockup.style.height = 25 * 16 * 16 / (9 * 9) + "%";
+    mockup.style.transform = "scale(1)";
     
     plus.onclick = () => {
-        imgWidth += 20;
-        display.style.width = imgWidth + "px";
-        wrapper.style.width = (imgWidth + 40) * 16 / 9 + "px";
+        scale += 20;
+        wrapper.style.width = 640 * scale / 100 + "px";
+        wrapper.style.height = 360 * scale / 100 + "px";
     }
 
     minus.onclick = () => {
-        imgWidth -= 20;
-        display.style.width = imgWidth + "px";
-        wrapper.style.width = (imgWidth + 40) * 16 / 9 + "px";
+        scale -= 20;
+        wrapper.style.width = 640 * scale / 100 + "px";
+        wrapper.style.height = 360 * scale / 100 + "px";
     }
 
     this.setImg = (file, shotType = 1, align = 0) => {
         if(file) img.src = URL.createObjectURL(file);
         else img.src = "";
-        display.style.transform = `scale(${1 + (shotType - 1) / 2})`;
-        display.style.transformOrigin = `50% ${(1 - align) * 50}%`;
+        mockup.style.transform = `scale(${1 + (shotType - 1) / 2})`;
+        mockup.style.transformOrigin = `50% ${(1 - align) * 50}%`;
     }
     this.getContainer = () => {
         return container;
     }
 
-    display.appendChild(img);
-    wrapper.appendChild(display);
+    mockup.appendChild(img);
+    wrapper.appendChild(mockup);
     zoom.appendChild(minus);
     zoom.appendChild(plus);
     container.appendChild(wrapper);
