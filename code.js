@@ -621,7 +621,8 @@ function VoiceOver(shots, getCurrentShot, workingAreaDuration) {
     let prevIndex;
     function trackPlay() {
         let currentShotIndex = getCurrentShot(item.getContainer().currentTime, true);
-        if(currentShotIndex === false || currentShotIndex === prevIndex) {
+        if(currentShotIndex === -1 || currentShotIndex === prevIndex && currentShotIndex != 0) {
+            //debugger;
             return
         }
         prevIndex = currentShotIndex;
@@ -677,11 +678,11 @@ function Timeline(setImg, data, getCoordinate) {
             let start = +i ? arr[i - 1].duration : 0;
             let end = arr[i].duration;
 
-            if(time >= start && time <= end) {
+            if(time >= start && time < end) {
                 return getindex ? i : arr[i];
             }
         }
-        if(getindex) return false;
+        if(getindex) return -1;
     }
 
     const container = document.createElement("div");
