@@ -530,6 +530,7 @@ function Shots(setImg, timeline, addJSONevents, getCoordinate) {
 
     const header = document.createElement("h3");
     header.innerHTML = "Shots: ";
+    header.style.margin = "10px 0 0";
     header.style.color = "#ffffff";
 
     const scrollBar = document.createElement("div");
@@ -730,9 +731,12 @@ function Coordinate(x = 0, y = 0) {
 function Display(set, imgWidth = 300) {
     const container = document.createElement("div");
     container.style.overflow = "auto";
-    container.style.height = "400px";
+    container.style.minHeight = "400px";
+    container.style.maxHeight = "700px";
     const wrapper = document.createElement("div");
+    wrapper.style.margin = "auto";
     wrapper.style.minHeight = "100px";
+    wrapper.style.width = (imgWidth + 40) * 16 / 9 + "px";
     wrapper.style.outline = "2px gray solid";
     wrapper.style.overflow = "hidden";
     wrapper.style.backgroundImage = "url('alpha.png')";
@@ -782,11 +786,13 @@ function Display(set, imgWidth = 300) {
     plus.onclick = () => {
         imgWidth += 20;
         display.style.width = imgWidth + "px";
+        wrapper.style.width = (imgWidth + 40) * 16 / 9 + "px";
     }
 
     minus.onclick = () => {
         imgWidth -= 20;
         display.style.width = imgWidth + "px";
+        wrapper.style.width = (imgWidth + 40) * 16 / 9 + "px";
     }
 
     this.setImg = (file, shotType = 1, align = 0) => {
@@ -803,8 +809,8 @@ function Display(set, imgWidth = 300) {
     wrapper.appendChild(display);
     zoom.appendChild(minus);
     zoom.appendChild(plus);
-    wrapper.appendChild(zoom);
     container.appendChild(wrapper);
+    container.appendChild(zoom);
 
     return this;
 }
