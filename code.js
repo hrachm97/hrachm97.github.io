@@ -690,10 +690,7 @@ function Timeline(setImg, data, getCoordinate) {
 
     const JSONconatiner = document.createElement("div");
     JSONconatiner.style.margin = "10px";
-    JSONconatiner.style.position = "absolute";
     JSONconatiner.style.left = "200px";
-    JSONconatiner.style.maxHeight = "80px";
-    JSONconatiner.style.overflowY = "scroll";
     JSONconatiner.style.backgroundColor = "rgb(255,255,255,0.8)";
 
     function addJSONevents(shotItem) {
@@ -706,8 +703,8 @@ function Timeline(setImg, data, getCoordinate) {
     }
 
     container.appendChild(VoiceOver(this.shots, getCurrentShot, workingAreaDuration));
-    container.appendChild(JSONconatiner);
     container.appendChild(Shots(setImg, this, addJSONevents, getCoordinate));
+    container.appendChild(JSONconatiner);
     container.style.marginBottom = "20px";
 
     this.getContainer = () => {
