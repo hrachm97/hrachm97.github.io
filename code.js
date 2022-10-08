@@ -654,7 +654,7 @@ function VoiceOver(shots, getCurrentShot, workingAreaDuration) {
         },200);
         scrollID = setInterval(() => {
             trackPlay();
-        },2000);
+        },200);
     }
     item.getContainer().onpause = () => {
         clearInterval(selectShotID);
