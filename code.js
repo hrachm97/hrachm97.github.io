@@ -44,7 +44,14 @@ function Type(set) {
         parent.querySelector("#negative").innerHTML = input.value == 1 ? "Left" : "Bottom";
     }
 
-    return container;
+    this.setValue = (value) => {
+        input.value = value;
+        return value;
+    }
+
+    this.getContainer = () => {
+        return container;
+    }
 }
 
 function Align(set) {
@@ -104,16 +111,35 @@ function Align(set) {
     container.appendChild(centerize);
     container.appendChild(range);
 
+    let percentToUnit = (inputValue) => {
+        let alignControl = outside.checked ? 3 : 1;
+        set( (alignControl * (inputValue/50 - 1)).toFixed(1));
+    }
     
     input.onchange = outside.onchange = () => {
-        let alignControl = outside.checked ? 3 : 1;
-        set( (alignControl * (input.value/50 - 1)).toFixed(1));
+        percentToUnit(input.value);
     }
 
-    return container;
+    this.getContainer = () => {
+        return container;
+    }
+
+    this.getValue = () => {
+        return input.value;
+    }
+
+    this.isChecked = () => {
+        return outside.checked;
+    }
+
+    this.setValue = (value, checked) => {
+        input.value = value;
+        outside.checked = checked;
+        return input.value;
+    }
 }
 
-function Touch(setTouch) {
+function Touch(setTouch, getCoordinate) {
     const container = document.createElement("div");
     container.style.display = "block";
     container.style.position = "relative";
@@ -130,13 +156,20 @@ function Touch(setTouch) {
     container.appendChild(value);
 
     button.onclick = () => {
-        value.innerHTML = setTouch();
+        value.innerHTML = setTouch(...getCoordinate());
     }
-    
-    return container;
+
+    this.setValue = (x, y) => {
+        value.innerHTML = [x, y];
+        return [x, y];
+    }
+
+    this.getContainer = () => {
+        return container;
+    }
 }
 
-function TextItem(srcText = "", number = 0, _color = "#ffffff", placeholder = "type text...") {
+function TextKernel(srcText = "", number = 0, _color = "#ffffff", placeholder = "type text...") {
     const input = document.createElement("input");
     input.className = "srcText";
     input.style.display = "block";
@@ -145,13 +178,13 @@ function TextItem(srcText = "", number = 0, _color = "#ffffff", placeholder = "t
     input.value = srcText;
     input.placeholder = placeholder;
 
-    const fontSize = document.createElement("input");
-    fontSize.className = "textNum";
-    fontSize.style.display = "inline-block";
-    fontSize.style.position = "relative";
-    fontSize.type = "number";
-    fontSize.value = number;
-    fontSize.style.width = "35px";
+    const numItem = document.createElement("input");
+    numItem.className = "textNum";
+    numItem.style.display = "inline-block";
+    numItem.style.position = "relative";
+    numItem.type = "number";
+    numItem.value = number;
+    numItem.style.width = "35px";
 
     const color = document.createElement("input");
     color.className = "textColor";
@@ -161,42 +194,49 @@ function TextItem(srcText = "", number = 0, _color = "#ffffff", placeholder = "t
     color.value = _color;
 
     this.values = [srcText, +number, _color];
-    this.getSrcText = () => {
-        return input;
-    }
-    this.getNum = () => {
-        return fontSize;
-    }
-    this.getColor = () => {
-        return color;
-    }
 
-    return this;
+    this.getElements = () => {
+        return [input, numItem, color]
+    }
 }
 
-function TextInput(set) {
+function TextItem(srcText = "", animN = 0, _color = "#ffffff", set = () => undefined) {
     const container = document.createElement("form");
     container.style.display = "inline-block";
     container.style.position = "relative";
     container.style.marginBottom = "10px";
     container.innerHTML = "Text: ";
 
-    const textItem = new TextItem();
-
     const button = document.createElement("button");
     button.innerHTML = "Add";
 
-    container.appendChild(textItem.getSrcText());
-    container.appendChild(textItem.getNum());
-    container.appendChild(textItem.getColor());
+    const kernel = new TextKernel(srcText, animN, _color);
+
+    const [input, animation, color] = kernel.getElements();
+    container.appendChild(input);
+    container.appendChild(animation);
+    container.appendChild(color);
     container.appendChild(button);
-    
+
     container.onsubmit = (e) => {
         e.preventDefault();
-        set(textItem.getSrcText().value, textItem.getNum().value, textItem.getColor().value);
+        set(input.value, animation.value, color.value);
+    }
+    
+    this.getContainer = () => {
+        return container;
+    }
+    
+    this.values = [srcText, +animN, _color];
+
+    this.setElements = (srcText, animN, _color) => {
+        input.value = srcText;
+        animation.value = animN;
+        color.value = _color;
+        return [srcText, animN, _color];
     }
 
-    return container;
+    return this;
 }
 
 function Duration(set, init) {
@@ -236,17 +276,17 @@ function InputItem(rmv, getCoordinate, instance) {
     let textItem;
     if(instance instanceof InputItem) {
         this.pos = instance.pos;
-        textItem = new TextItem(
-            instance.text[0], 
-            instance.text[1],
-            instance.text[2]
+        textItem = new TextKernel(
+            ...instance.text//[0], 
+            // instance.text[1],
+            // instance.text[2]
         );
 
         this.text = textItem.values;
         this.typing = instance.typing;
         this.cursor = instance.cursor;
     } else {
-        textItem = new TextItem("", 22, "#ffffff", "type input...");
+        textItem = new TextKernel("", 22, "#ffffff", "type input...");
         this.text = textItem.values;
         this.typing = false;
         this.cursor = false;
@@ -254,6 +294,8 @@ function InputItem(rmv, getCoordinate, instance) {
 
     this.setPos = (x, y) => {
         this.pos = [+x, +y];
+        
+        return this.pos;
     }
 
     this.setText = (str, fontSize, color) => {
@@ -278,9 +320,7 @@ function InputItem(rmv, getCoordinate, instance) {
     setPos.innerHTML = "Set position";
 
     setPos.onclick = () => {
-        let [x,y] = getCoordinate();
-        pos.innerHTML = [x,y];
-        this.setPos(x,y);
+        pos.innerHTML = this.setPos(...getCoordinate());
     }
 
     const pos = document.createElement("span");
@@ -297,9 +337,10 @@ function InputItem(rmv, getCoordinate, instance) {
     const button = document.createElement("button");
     button.innerHTML = "Set";
 
-    form.appendChild(textItem.getSrcText());
-    form.appendChild(textItem.getNum());
-    form.appendChild(textItem.getColor());
+    const [srcText, fontSize, color] = textItem.getElements();
+    form.appendChild(srcText);
+    form.appendChild(fontSize);
+    form.appendChild(color);
     form.appendChild(typing);
     form.appendChild(cursor);
     form.appendChild(button);
@@ -310,12 +351,13 @@ function InputItem(rmv, getCoordinate, instance) {
     
     form.onsubmit = (e) => {
         e.preventDefault();
-        if(textItem.getSrcText().value == "") {
+
+        if(srcText.value === "") {
             rmv(this);
             container.style.display = "none";
             return;
         }
-        this.setText(textItem.getSrcText().value, textItem.getNum().value, textItem.getColor().value);
+        this.setText(srcText.value, fontSize.value, color.value);
         this.setTyping(typing.checked);
         this.setCursor(cursor.checked);
     }
@@ -379,8 +421,10 @@ function selectArea() {
     return container;
 }
 
-function ShotItem(setImg, timeline, getCoordinate, updateIndexes, instance) {
-    let file = FileInput(setImg, this);
+function ShotItem(display, timeline, getCoordinate, updateIndexes, instance) {
+    let file = FileInput(display.setImg, this);
+
+    const container = document.createElement("div");
     
     this.getFile = () => {
         return file;
@@ -399,35 +443,32 @@ function ShotItem(setImg, timeline, getCoordinate, updateIndexes, instance) {
     }
     this.setType = (_type) => {
         this.type = +_type;
-        setImg(file.files[0], this.type, this.align);
+        display.setImg(file.files[0], this.type, this.align);
     }
     this.setAlign = (_align) => {
         this.align = +_align;
-        setImg(file.files[0], this.type, this.align);
+        display.setImg(file.files[0], this.type, this.align);
     }
-    this.setTouch = () => {
-        this.touch = getCoordinate();
+    this.setTouch = (x,y) => {
+        this.touch = [x, y];
         return this.touch;
     }
-    //let textitem;
-    this.setText = (_text, _num, _color) => {
-        if(_text === "") delete this.text;
+    this.setText = (text, animN, _color) => {
+        if(text === "") delete this.text;
         else {
-            //textitem = new TextItem(_text, _num, _color);
-            this.text = [_text, _num, _color];
+            this.text = (new TextItem(text, animN, _color)).values;
         }
     }
     this.addInput = (_input) => {
         if(this.input === undefined) this.input = [];
         this.input.push(_input);
+        //display.addInput(..._input.pos, _input.text[0]);
     }
     this.rmvInput = (_input) => {
         let index = this.input.indexOf(_input);
         this.input.splice(index, 1);
         if(this.input.length === 0) delete this.input;
     }
-
-    const container = document.createElement("div");
 
     let terminate = false;
     this.select = (manual = true) => {
@@ -440,7 +481,7 @@ function ShotItem(setImg, timeline, getCoordinate, updateIndexes, instance) {
         if(selected) container.style.outlineStyle = "none";
         else {
             container.style.outlineStyle = "solid";
-            setImg(file.files[0], this.type, this.align);
+            display.setImg(file.files[0], this.type, this.align);
         }
         selected = !selected;
         terminate = false;
@@ -494,12 +535,22 @@ function ShotItem(setImg, timeline, getCoordinate, updateIndexes, instance) {
     container.appendChild(x);
     container.appendChild(index);
     container.appendChild(file);
-    container.appendChild(Type(this.setType));
-    container.appendChild(Align(this.setAlign));
-    container.appendChild(Touch(this.setTouch));
-    container.appendChild(TextInput(this.setText));
+
+    const type = new Type(this.setType);
+    container.appendChild(type.getContainer());
+
+    const align = new Align(this.setAlign);
+    container.appendChild(align.getContainer());
+
+    const touch = new Touch(this.setTouch, getCoordinate);
+    container.appendChild(touch.getContainer());
+
+    const text = new TextItem("", 0, "#ffffff", this.setText);
+    container.appendChild(text.getContainer());
+
     const inputs = Inputs(this.addInput, this.rmvInput, getCoordinate);
     container.appendChild(inputs);
+
     const duration = Duration(this.setDuration, this.duration);
     container.appendChild(duration);
 
@@ -507,15 +558,27 @@ function ShotItem(setImg, timeline, getCoordinate, updateIndexes, instance) {
         return duration;
     }
 
+    this.getAlign = () => {
+        return [
+            align.getValue(),
+            align.isChecked()
+        ]
+    }
+
     this.getContainer = () => {
         return container;
     }
 
     if(instance instanceof ShotItem) {
-        this.type = instance.type;
-        this.align = instance.align;
-        if(instance.touch) this.touch = [instance.touch[0], instance.touch[1]];
-        this.text = instance.text;
+        this.setType(type.setValue(instance.type));
+
+        this.setAlign(instance.align);
+        align.setValue(...instance.getAlign());
+
+        if(instance.touch) this.setTouch(...touch.setValue(...instance.touch));
+
+        if(instance.text) this.setText(...text.setElements(...instance.text));
+
         if(instance.input) {
             for(item of instance.input) {
                 let newItem = new InputItem(this.rmvInput, getCoordinate, item)
@@ -528,11 +591,10 @@ function ShotItem(setImg, timeline, getCoordinate, updateIndexes, instance) {
         this.type = 1;
         this.align = 0;
     }
-
     return this;
 }
 
-function Shots(setImg, timeline, addJSONevents, getCoordinate) {
+function Shots(display, timeline, addJSONevents, getCoordinate) {
     const container = document.createElement("div");
 
     const header = document.createElement("h3");
@@ -542,7 +604,6 @@ function Shots(setImg, timeline, addJSONevents, getCoordinate) {
 
     const scrollBar = document.createElement("div");
     scrollBar.className = "shotsScroll";
-    //scrollBar.style.transition = "2s";
     scrollBar.style.position = "relative";
     scrollBar.style.overflow = "auto";
     scrollBar.style.whiteSpace = "nowrap";
@@ -570,30 +631,28 @@ function Shots(setImg, timeline, addJSONevents, getCoordinate) {
             for(item of timeline.shots) {
                 if(item.isSelected()) {
                     copyItem = item;
+                    break;
                 }
+                copyItem = timeline.shots[timeline.shots.length - 1];
             }
-            if(!copyItem) copyItem = timeline.shots[timeline.shots.length - 1];
-            newItem = new ShotItem(setImg, timeline, getCoordinate, updateIndexes, copyItem);
-            newItem.getContainer().querySelector(".shotType").value = copyItem.getContainer().querySelector(".shotType").value;
-            newItem.getContainer().querySelector(".alignSlider").value = copyItem.getContainer().querySelector(".alignSlider").value;
-            newItem.getContainer().querySelector(".outside").checked = copyItem.getContainer().querySelector(".outside").checked;
-            newItem.getContainer().querySelector(".touch").innerHTML = copyItem.getContainer().querySelector(".touch").innerHTML;
-            newItem.getContainer().querySelector(".srcText").value = copyItem.getContainer().querySelector(".srcText").value;
-            newItem.getContainer().querySelector(".textNum").value = copyItem.getContainer().querySelector(".textNum").value;
-            newItem.getContainer().querySelector(".textColor").value = copyItem.getContainer().querySelector(".textColor").value;
+            newItem = new ShotItem(display, timeline, getCoordinate, updateIndexes, copyItem);
             timeline.addShot(newItem);
             let thisIndex = timeline.shots.indexOf(newItem);
             timeline.shots[thisIndex - 1].getDuration().setDuration(
                 timeline.shots[thisIndex - 1].setDuration(+document.querySelector("audio").currentTime.toFixed(1))
             )
         } else {
-            newItem = new ShotItem(setImg, timeline, getCoordinate, updateIndexes);
+            newItem = new ShotItem(display, timeline, getCoordinate, updateIndexes);
             timeline.addShot(newItem);
         }
 
         addJSONevents(newItem);
         scrollBar.appendChild(newItem.getContainer());
-        scrollBar.scrollTo(scrollBar.scrollWidth, 0);
+        scrollBar.scrollTo({
+            left: scrollBar.scrollWidth,
+            top: 0, 
+            behavior: 'smooth'
+        });
     }
 
     container.appendChild(header);
@@ -624,7 +683,7 @@ function AudioItem() {
     return this;
 }
 
-function VoiceOver(shots, getCurrentShot, workingAreaDuration) {
+function VoiceOver(shots, getCurrentShot) {
     const container = document.createElement("div");
     const item = new AudioItem();
     const file = FileInput(item.set);
@@ -634,16 +693,20 @@ function VoiceOver(shots, getCurrentShot, workingAreaDuration) {
     let prevIndex;
     function trackPlay() {
         let currentShotIndex = getCurrentShot(item.getContainer().currentTime, true);
-        if(currentShotIndex === -1 || currentShotIndex === prevIndex && currentShotIndex != 0) {
+        if(currentShotIndex === -1 || currentShotIndex === prevIndex ) {//&& currentShotIndex != 0
             //debugger;
             return
         }
         prevIndex = currentShotIndex;
-        let playedPercent = currentShotIndex / (shots.length - 1);
+        let playedPercent = currentShotIndex / shots.length;
         let timelineWidth = container.parentNode.querySelector(".shotsScroll").scrollWidth;
-        let width = container.parentNode.querySelector(".shotsScroll").getBoundingClientRect().width;
-        let amount = playedPercent * timelineWidth - width * 2 / 7;
-        container.parentNode.querySelector(".shotsScroll").scrollTo(amount, 0);
+        let shotWidth = timelineWidth / shots.length;
+        let amount = playedPercent * timelineWidth - (window.innerWidth-16 - shotWidth)/2;
+        container.parentNode.querySelector(".shotsScroll").scrollTo({
+            left: amount,
+            top: 0, 
+            behavior: 'smooth'
+        });
     }
 
     item.getContainer().onplay = () => {
@@ -667,7 +730,7 @@ function VoiceOver(shots, getCurrentShot, workingAreaDuration) {
     return container;
 }
 
-function Timeline(setImg, data, getCoordinate) {
+function Timeline(display, data, getCoordinate) {
     this.shots = [];
 
     this.addShot = (shotItem) => {
@@ -678,10 +741,6 @@ function Timeline(setImg, data, getCoordinate) {
         let index = this.shots.indexOf(shotItem);
         this.shots.splice(index, 1);
         return this.shots.length;
-    }
-
-    let workingAreaDuration = () => {
-        return this.shots[this.shots.length - 1] ? this.shots[this.shots.length - 1].duration : 0;
     }
 
     let getCurrentShot = (time, getindex = false) => {
@@ -718,8 +777,8 @@ function Timeline(setImg, data, getCoordinate) {
         }
     }
 
-    container.appendChild(VoiceOver(this.shots, getCurrentShot, workingAreaDuration));
-    container.appendChild(Shots(setImg, this, addJSONevents, getCoordinate));
+    container.appendChild(VoiceOver(this.shots, getCurrentShot));
+    container.appendChild(Shots(display, this, addJSONevents, getCoordinate));
     container.appendChild(JSONconatiner);
     container.style.marginBottom = "20px";
 
@@ -747,16 +806,18 @@ function Display(set, scale = 100) {
     container.style.overflow = "auto";
     container.style.minHeight = "400px";
     container.style.maxHeight = "700px";
-    const wrapper = document.createElement("div");
-    wrapper.style.margin = "auto";
-    wrapper.style.width = "640px";
-    wrapper.style.height = "360px";
-    wrapper.style.outline = "2px gray solid";
-    wrapper.style.overflow = "hidden";
-    wrapper.style.backgroundImage = "url('alpha.png')";
-    wrapper.style.backgroundSize = "25px 25px";
+    const composition = document.createElement("div");
+    composition.style.margin = "20px auto";
+    composition.style.width = "640px";
+    composition.style.height = "360px";
+    composition.style.outline = "2px gray solid";
+    composition.style.overflow = "hidden";
+    composition.style.backgroundImage = "url('alpha.png')";
+    composition.style.backgroundSize = "25px 25px";
 
     const mockup = document.createElement("div");
+    mockup.style.position = "relative";
+    mockup.className = "mockup";
 
     const zoom = document.createElement("div");
     zoom.style.position = "absolute";
@@ -798,14 +859,14 @@ function Display(set, scale = 100) {
     
     plus.onclick = () => {
         scale += 20;
-        wrapper.style.width = 640 * scale / 100 + "px";
-        wrapper.style.height = 360 * scale / 100 + "px";
+        composition.style.width = 640 * scale / 100 + "px";
+        composition.style.height = 360 * scale / 100 + "px";
     }
 
     minus.onclick = () => {
         scale -= 20;
-        wrapper.style.width = 640 * scale / 100 + "px";
-        wrapper.style.height = 360 * scale / 100 + "px";
+        composition.style.width = 640 * scale / 100 + "px";
+        composition.style.height = 360 * scale / 100 + "px";
     }
 
     this.setImg = (file, shotType = 1, align = 0) => {
@@ -814,15 +875,28 @@ function Display(set, scale = 100) {
         mockup.style.transform = `scale(${1 + (shotType - 1) / 2})`;
         mockup.style.transformOrigin = `50% ${(1 - align) * 50}%`;
     }
+
+    // this.addInput = (x, y, inputText) => {
+    //     const input = document.createElement("div");
+    //     input.innerHTML = inputText;
+
+    //     input.style.top = (x / 100) * img.getBoundingClientRect().width + "px";
+    //     input.style.left = (y / 100)  * img.getBoundingClientRect().height + "px";
+
+    //     mockup.appendChild(input);
+
+    //     return input;
+    // }
+
     this.getContainer = () => {
         return container;
     }
 
     mockup.appendChild(img);
-    wrapper.appendChild(mockup);
+    composition.appendChild(mockup);
     zoom.appendChild(minus);
     zoom.appendChild(plus);
-    container.appendChild(wrapper);
+    container.appendChild(composition);
     container.appendChild(zoom);
 
     return this;
@@ -840,7 +914,7 @@ function App() {
     let coordinate = new Coordinate();
 
     const display = new Display(coordinate.set);
-    const timeline = new Timeline(display.setImg, data, coordinate.get);
+    const timeline = new Timeline(display, data, coordinate.get);
     
     data.shot = timeline.shots;
 
