@@ -184,7 +184,7 @@ function TextKernel(srcText = "", number = 0, _color = "#ffffff", placeholder = 
     numItem.style.position = "relative";
     numItem.type = "number";
     numItem.value = number;
-    numItem.style.width = "35px";
+    numItem.style.width = "45px";
 
     const color = document.createElement("input");
     color.className = "textColor";
@@ -290,14 +290,19 @@ function InputItem(rmv, getCoordinate, instance) {
         this.text = textItem.values;
         this.typing = false;
         this.cursor = false;
+        this.pos = [0,0];
     }
 
-    this.setPos = (x, y) => {
-        this.pos = [+x, +y];
-        
-        return this.pos;
+    this.setX = (x) => {
+        this.pos[0] = +x;
+        return x;
     }
 
+    this.setY = (y) => {
+        this.pos[1] = +y;
+        return y;
+    }
+    
     this.setText = (str, fontSize, color) => {
         this.text = [str, +fontSize, color];
     }
@@ -315,16 +320,39 @@ function InputItem(rmv, getCoordinate, instance) {
     container.style.display = "inline-block";
     container.style.position = "relative";
     container.style.padding = "10px";
-
-    const setPos = document.createElement("button");
-    setPos.innerHTML = "Set position";
-
-    setPos.onclick = () => {
-        pos.innerHTML = this.setPos(...getCoordinate());
+    
+    const pos = document.createElement("span");
+    pos.style.display = "block";
+    const setX = document.createElement("input");
+    const setY = document.createElement("input");
+    setX.type = setY.type = "number";
+    setX.style.width = setY.style.width = "40px";
+    setX.step = setY.step = ".1";
+    setX.value = this.pos[0];
+    setY.value = this.pos[1];
+    setX.onchange = () => {
+        this.pos[0] = setX.value;
+    }
+    setY.onchange = () => {
+        this.pos[1] = setY.value;
     }
 
-    const pos = document.createElement("span");
-    if(this.pos) pos.innerHTML = this.pos;
+    this.setPos = (x, y) => {
+        setX.value = this.setX(x);
+        setY.value = this.setY(y);
+        
+        return this.pos;
+    }
+
+    const setPos = document.createElement("button");
+    setPos.innerHTML = "Set Position";
+    setPos.onclick = () => {
+        this.setPos(...this.setPos(...getCoordinate()));
+    }
+
+    pos.appendChild(setPos);
+    pos.appendChild(setX);
+    pos.appendChild(setY);
 
     const form = document.createElement("form");
 
@@ -334,32 +362,40 @@ function InputItem(rmv, getCoordinate, instance) {
     typing.checked = this.typing;
     cursor.checked = this.cursor;
 
-    const button = document.createElement("button");
-    button.innerHTML = "Set";
+    const remove = document.createElement("button");
+    remove.innerHTML = "remove";
+    remove.onclick = () => {
+        rmv(this);
+        container.style.display = "none";
+    }
 
     const [srcText, fontSize, color] = textItem.getElements();
+    fontSize.step = ".1";
     form.appendChild(srcText);
     form.appendChild(fontSize);
     form.appendChild(color);
     form.appendChild(typing);
     form.appendChild(cursor);
-    form.appendChild(button);
     
-    container.appendChild(setPos);
     container.appendChild(pos);
     container.appendChild(form);
-    
+    container.appendChild(remove);
+
     form.onsubmit = (e) => {
         e.preventDefault();
-
-        if(srcText.value === "") {
-            rmv(this);
-            container.style.display = "none";
-            return;
-        }
         this.setText(srcText.value, fontSize.value, color.value);
-        this.setTyping(typing.checked);
-        this.setCursor(cursor.checked);
+    }
+    
+    form.childNodes.forEach((element) => {
+        element.onchange = () => {
+            this.setText(srcText.value, fontSize.value, color.value);
+            this.setCursor(cursor.checked);
+            this.setTyping(typing.checked);
+        }
+    });
+
+    this.getTextAttributes = () => {
+        return textItem.getElements();
     }
 
     this.getContainer = () => {
@@ -482,6 +518,7 @@ function ShotItem(display, timeline, getCoordinate, updateIndexes, instance) {
         else {
             container.style.outlineStyle = "solid";
             display.setImg(file.files[0], this.type, this.align);
+            display.rendInputs(this);
         }
         selected = !selected;
         terminate = false;
@@ -569,7 +606,14 @@ function ShotItem(display, timeline, getCoordinate, updateIndexes, instance) {
         return container;
     }
 
+    inputs.childNodes.forEach( item => {
+        item.onchange = () => {
+            display.rendInputs(this);
+        }
+    })
+
     if(instance instanceof ShotItem) {
+        file.files = instance.getFile().files;
         this.setType(type.setValue(instance.type));
 
         this.setAlign(instance.align);
@@ -586,7 +630,6 @@ function ShotItem(display, timeline, getCoordinate, updateIndexes, instance) {
                 inputs.querySelector(".scrollBar").appendChild(newItem.getContainer());
             }
         }
-        file.files = instance.getFile().files;
     } else {
         this.type = 1;
         this.align = 0;
@@ -801,7 +844,7 @@ function Coordinate(x = 0, y = 0) {
     return this;
 }
 
-function Display(set, scale = 100) {
+function Display(set, scale = 1) {
     const container = document.createElement("div");
     container.style.overflow = "auto";
     container.style.minHeight = "400px";
@@ -816,12 +859,11 @@ function Display(set, scale = 100) {
     composition.style.backgroundSize = "25px 25px";
 
     const mockup = document.createElement("div");
-    mockup.style.position = "relative";
     mockup.className = "mockup";
 
-    const zoom = document.createElement("div");
-    zoom.style.position = "absolute";
-    zoom.style.top = 0;
+    const zoomIcons = document.createElement("div");
+    zoomIcons.style.position = "absolute";
+    zoomIcons.style.top = 0;
 
     const plus = document.createElement("button");
     const minus = document.createElement("button");
@@ -834,8 +876,8 @@ function Display(set, scale = 100) {
     img.style.width = "100%";
 
     function mouse_position(offset = [0,0]) {
-        const width = img.clientWidth;
-        const height = img.clientHeight;
+        const width = mockup.getBoundingClientRect().width;
+        const height = mockup.getBoundingClientRect().height;
         const [x,y] = [
             event.clientX - offset[0], 
             event.clientY - offset[1]
@@ -846,7 +888,7 @@ function Display(set, scale = 100) {
         ]
     }
     
-    img.onclick = (e) => {
+    mockup.onclick = (e) => {
         let rect = e.target.getBoundingClientRect();
         set(...mouse_position([rect.left, rect.top]));
     }
@@ -857,47 +899,74 @@ function Display(set, scale = 100) {
     mockup.style.height = 25 * 16 * 16 / (9 * 9) + "%";
     mockup.style.transform = "scale(1)";
     
-    plus.onclick = () => {
-        scale += 20;
-        composition.style.width = 640 * scale / 100 + "px";
-        composition.style.height = 360 * scale / 100 + "px";
-    }
-
-    minus.onclick = () => {
-        scale -= 20;
-        composition.style.width = 640 * scale / 100 + "px";
-        composition.style.height = 360 * scale / 100 + "px";
-    }
-
     this.setImg = (file, shotType = 1, align = 0) => {
+        debugger;
         if(file) img.src = URL.createObjectURL(file);
         else img.src = "";
         mockup.style.transform = `scale(${1 + (shotType - 1) / 2})`;
         mockup.style.transformOrigin = `50% ${(1 - align) * 50}%`;
     }
+    
+    const inputs = document.createElement("div");
+    inputs.style.position = "absolute";
+    inputs.style.transformOrigin = "0 0";
+    inputs.style.top = 0;
+    inputs.style.left = 0;
+    inputs.style.width = "160px";
+    inputs.style.height = "284px";
 
-    // this.addInput = (x, y, inputText) => {
-    //     const input = document.createElement("div");
-    //     input.innerHTML = inputText;
+    this.rendInputs = (shotItem) => {
+        inputs.innerHTML = "";
+        if(shotItem.input) {
+            const rect = inputs.getBoundingClientRect();
+            shotItem.input.forEach(item => {
+                const inputItem = document.createElement("div");
+                inputItem.style.position = "absolute";
+                inputItem.style.left = (item.pos[0] / 100)*160 + "px";
+                inputItem.style.top = (item.pos[1] / 100)*284 + "px";
 
-    //     input.style.top = (x / 100) * img.getBoundingClientRect().width + "px";
-    //     input.style.left = (y / 100)  * img.getBoundingClientRect().height + "px";
+                inputItem.innerHTML = item.getTextAttributes()[0].value;
+                inputItem.style.fontSize = item.getTextAttributes()[1].value * (rect.width / 100) + "px";
+                inputItem.style.color = item.getTextAttributes()[2].value;
+                inputs.appendChild(inputItem);
+            });
+        }
+    }
+    
+    let zoom = (amount = 0) => {
+        scale += amount;
+        composition.style.width = 640 * scale + "px";
+        composition.style.height = 360 * scale + "px";
+        const rectComp = composition.getBoundingClientRect();
+        const rectCont = container.getBoundingClientRect();
+        
+        container.scrollTo(
+            (rectComp.width - rectCont.width)/2, 
+            (rectComp.height - rectCont.height)/2
+        );
 
-    //     mockup.appendChild(input);
+        inputs.style.transform = `scale(${scale})`;
+    }
 
-    //     return input;
-    // }
+    plus.onclick = () => {
+        zoom(.2);
+    }
 
+    minus.onclick = () => {
+        zoom(-0.2);
+    }
+    
     this.getContainer = () => {
         return container;
     }
 
     mockup.appendChild(img);
+    mockup.appendChild(inputs);
     composition.appendChild(mockup);
-    zoom.appendChild(minus);
-    zoom.appendChild(plus);
+    zoomIcons.appendChild(minus);
+    zoomIcons.appendChild(plus);
     container.appendChild(composition);
-    container.appendChild(zoom);
+    container.appendChild(zoomIcons);
 
     return this;
 }
