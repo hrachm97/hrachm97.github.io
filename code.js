@@ -737,7 +737,6 @@ function VoiceOver(shots, getCurrentShot) {
     function trackPlay() {
         let currentShotIndex = getCurrentShot(item.getContainer().currentTime, true);
         if(currentShotIndex === -1 || currentShotIndex === prevIndex ) {//&& currentShotIndex != 0
-            //debugger;
             return
         }
         prevIndex = currentShotIndex;
@@ -787,7 +786,6 @@ function Timeline(display, data, getCoordinate) {
     }
 
     let getCurrentShot = (time, getindex = false) => {
-        //debugger;
         let arr = this.shots;
         for(i in arr) {
             let start = +i ? arr[i - 1].duration : 0;
@@ -846,6 +844,7 @@ function Coordinate(x = 0, y = 0) {
 
 function Display(set, scale = 1) {
     const container = document.createElement("div");
+    container.className = "display";
     container.style.overflow = "auto";
     container.style.minHeight = "400px";
     container.style.maxHeight = "700px";
@@ -874,6 +873,14 @@ function Display(set, scale = 1) {
     
     const img = document.createElement("img");
     img.style.width = "100%";
+    img.style.borderRadius = "10px";
+
+    const mockupImg = document.createElement("img");
+    mockupImg.style.position = "absolute";
+    mockupImg.style.left = "-5%";
+    mockupImg.style.top = "-2%";
+    mockupImg.style.width = "110%";
+    mockupImg.src = "mockup1.png";
 
     function mouse_position(offset = [0,0]) {
         const width = mockup.getBoundingClientRect().width;
@@ -894,13 +901,11 @@ function Display(set, scale = 1) {
     }
     
     mockup.style.margin = "6% auto";
-    mockup.style.overflow = "hidden";
-    mockup.style.width = "25%";
-    mockup.style.height = 25 * 16 * 16 / (9 * 9) + "%";
+    mockup.style.width = "20.5%";
+    mockup.style.height = "79%";
     mockup.style.transform = "scale(1)";
     
     this.setImg = (file, shotType = 1, align = 0) => {
-        debugger;
         if(file) img.src = URL.createObjectURL(file);
         else img.src = "";
         mockup.style.transform = `scale(${1 + (shotType - 1) / 2})`;
@@ -912,7 +917,7 @@ function Display(set, scale = 1) {
     inputs.style.transformOrigin = "0 0";
     inputs.style.top = 0;
     inputs.style.left = 0;
-    inputs.style.width = "160px";
+    inputs.style.width = "132px";
     inputs.style.height = "284px";
 
     this.rendInputs = (shotItem) => {
@@ -926,7 +931,7 @@ function Display(set, scale = 1) {
                 inputItem.style.top = (item.pos[1] / 100)*284 + "px";
 
                 inputItem.innerHTML = item.getTextAttributes()[0].value;
-                inputItem.style.fontSize = item.getTextAttributes()[1].value * (rect.width / 100) + "px";
+                inputItem.style.fontSize = item.getTextAttributes()[1].value  *9/22  + "px";
                 inputItem.style.color = item.getTextAttributes()[2].value;
                 inputs.appendChild(inputItem);
             });
@@ -961,6 +966,7 @@ function Display(set, scale = 1) {
     }
 
     mockup.appendChild(img);
+    mockup.appendChild(mockupImg);
     mockup.appendChild(inputs);
     composition.appendChild(mockup);
     zoomIcons.appendChild(minus);
