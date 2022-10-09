@@ -644,13 +644,7 @@ function Shots(display, timeline, addJSONevents, getCoordinate) {
     header.innerHTML = "Shots: ";
     header.style.margin = "10px 0 0";
     header.style.color = "#ffffff";
-
-    const scrollBar = document.createElement("div");
-    scrollBar.className = "shotsScroll";
-    scrollBar.style.position = "relative";
-    scrollBar.style.overflow = "auto";
-    scrollBar.style.whiteSpace = "nowrap";
-
+    
     const button = document.createElement("button");
     button.innerHTML = "<h3>Add</h3>";
     button.style.padding = "0px 20px";
@@ -659,8 +653,25 @@ function Shots(display, timeline, addJSONevents, getCoordinate) {
     button.style.color = "white";
     button.style.textEmphasisColor = "#000";
 
-    header.appendChild(button);
+    const selectMockup = document.createElement("select");
+    selectMockup.innerHTML = `
+        <option value=1>Iphone</option>
+        <option value=2>Samsung</option>
+    `
 
+    selectMockup.onchange = () => {
+        display.setMockup(+selectMockup.value);
+    }
+    
+    header.appendChild(button);
+    header.appendChild(selectMockup);
+
+    const scrollBar = document.createElement("div");
+    scrollBar.className = "shotsScroll";
+    scrollBar.style.position = "relative";
+    scrollBar.style.overflow = "auto";
+    scrollBar.style.whiteSpace = "nowrap";
+    
     function updateIndexes() {
         for(item of timeline.shots) {
             item.setIndex();
@@ -880,7 +891,20 @@ function Display(set, scale = 1) {
     mockupImg.style.left = "-5%";
     mockupImg.style.top = "-2%";
     mockupImg.style.width = "110%";
-    mockupImg.src = "mockup1.png";
+    mockupImg.src = "tutorial_template/(Footage)/mockups/mockup1.png";
+
+    this.setMockup = (index) => {
+        switch (index) {
+            case 1: mockupImg.src = "mockup1.png";
+                mockupImg.style.left = "-5%";
+                mockupImg.style.width = "110%";
+                break;
+            case 2: mockupImg.src = "galaxyS20.png";
+                mockupImg.style.left = "-1.8%";
+                mockupImg.style.width = "104%";
+                break;
+        }
+    }
 
     function mouse_position(offset = [0,0]) {
         const width = mockup.getBoundingClientRect().width;
