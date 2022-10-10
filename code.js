@@ -664,7 +664,8 @@ function Shots(display, timeline, addJSONevents, getCoordinate) {
 
     const background = FileInput(display.setBackground);
     background.style.name = "choose background";
-    background.style.margin = "0 10px"
+    background.style.margin = "0 10px";
+    background.style.width = "130px";
 
     selectMockup.onchange = () => {
         display.setMockup(+selectMockup.value);
@@ -897,12 +898,12 @@ function Display(set, scale = 1) {
 
     this.setMockup = (index) => {
         switch (index) {
-            case 1: mockupImg.src = "mockup1.png";
+            case 1: mockupImg.src = "tutorial_template/(Footage)/mockups/mockup1.png";
                 mockupImg.style.left = "-5%";
                 mockupImg.style.top = "-1.9%";
                 mockupImg.style.width = "110%";
                 break;
-            case 2: mockupImg.src = "galaxyS20.png";
+            case 2: mockupImg.src = "tutorial_template/(Footage)/mockups/galaxyS20.png";
                 mockupImg.style.left = "-1.85%";
                 mockupImg.style.top = "-1.8%";
                 mockupImg.style.width = "104%";
