@@ -14,7 +14,8 @@ function FileInput(set, shotItem) {
         set(
             container.files[0], 
             shotItem ? shotItem.type : undefined, 
-            shotItem ? shotItem.align : undefined);
+            shotItem ? shotItem.align : undefined
+        );
     }
 
     return container;
@@ -504,6 +505,8 @@ function ShotItem(display, timeline, getCoordinate, updateIndexes, instance) {
         let index = this.input.indexOf(_input);
         this.input.splice(index, 1);
         if(this.input.length === 0) delete this.input;
+        _input.getContainer().style.display = "none";
+        display.rendInputs(this);
     }
 
     let terminate = false;
@@ -659,12 +662,17 @@ function Shots(display, timeline, addJSONevents, getCoordinate) {
         <option value=2>Samsung</option>
     `
 
+    const background = FileInput(display.setBackground);
+    background.style.name = "choose background";
+    background.style.margin = "0 10px"
+
     selectMockup.onchange = () => {
         display.setMockup(+selectMockup.value);
     }
     
     header.appendChild(button);
     header.appendChild(selectMockup);
+    header.appendChild(background);
 
     const scrollBar = document.createElement("div");
     scrollBar.className = "shotsScroll";
@@ -865,8 +873,6 @@ function Display(set, scale = 1) {
     composition.style.height = "360px";
     composition.style.outline = "2px gray solid";
     composition.style.overflow = "hidden";
-    composition.style.backgroundImage = "url('alpha.png')";
-    composition.style.backgroundSize = "25px 25px";
 
     const mockup = document.createElement("div");
     mockup.className = "mockup";
@@ -884,27 +890,38 @@ function Display(set, scale = 1) {
     
     const img = document.createElement("img");
     img.style.width = "100%";
-    img.style.borderRadius = "10px";
+    img.style.borderRadius = "3%";
 
     const mockupImg = document.createElement("img");
     mockupImg.style.position = "absolute";
-    mockupImg.style.left = "-5%";
-    mockupImg.style.top = "-2%";
-    mockupImg.style.width = "110%";
-    mockupImg.src = "tutorial_template/(Footage)/mockups/mockup1.png";
 
     this.setMockup = (index) => {
         switch (index) {
             case 1: mockupImg.src = "mockup1.png";
                 mockupImg.style.left = "-5%";
+                mockupImg.style.top = "-1.9%";
                 mockupImg.style.width = "110%";
                 break;
             case 2: mockupImg.src = "galaxyS20.png";
-                mockupImg.style.left = "-1.8%";
+                mockupImg.style.left = "-1.85%";
+                mockupImg.style.top = "-1.8%";
                 mockupImg.style.width = "104%";
                 break;
         }
     }
+    this.setMockup(1);
+
+    this.setBackground = (file) => {
+        if(file) {
+            composition.style.backgroundImage = `url(${ URL.createObjectURL(file)})`;
+            composition.style.backgroundSize = "cover";
+            composition.style.backgroundPosition = "center";
+        } else {
+            composition.style.backgroundImage = "url('alpha.png')";
+            composition.style.backgroundSize = "25px 25px";
+        }
+    }
+    this.setBackground();
 
     function mouse_position(offset = [0,0]) {
         const width = mockup.getBoundingClientRect().width;
