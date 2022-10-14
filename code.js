@@ -1,5 +1,3 @@
-//
-
 function FileInput(set, shotItem) {
     
     const container = document.createElement("input");
