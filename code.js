@@ -898,12 +898,12 @@ function Display(set, scale = 1) {
 
     this.setMockup = (index) => {
         switch (index) {
-            case 1: mockupImg.src = "mockup1.png";
+            case 1: mockupImg.src = "tutorial_template/(Footage)/mockups/mockup1.png";
                 mockupImg.style.left = "-5%";
                 mockupImg.style.top = "-1.9%";
                 mockupImg.style.width = "110%";
                 break;
-            case 2: mockupImg.src = "galaxyS20.png";
+            case 2: mockupImg.src = "tutorial_template/(Footage)/mockups/galaxyS20.png";
                 mockupImg.style.left = "-1.85%";
                 mockupImg.style.top = "-1.8%";
                 mockupImg.style.width = "104%";
@@ -969,11 +969,11 @@ function Display(set, scale = 1) {
             shotItem.input.forEach(item => {
                 const inputItem = document.createElement("div");
                 inputItem.style.position = "absolute";
-                inputItem.style.left = (item.pos[0] / 100)*160 + "px";
+                inputItem.style.left = (item.pos[0] / 100)*132 + "px";
                 inputItem.style.top = (item.pos[1] / 100)*284 + "px";
 
                 inputItem.innerHTML = item.getTextAttributes()[0].value;
-                inputItem.style.fontSize = item.getTextAttributes()[1].value  *9/22  + "px";
+                inputItem.style.fontSize = item.getTextAttributes()[1].value + "px";
                 inputItem.style.color = item.getTextAttributes()[2].value;
                 inputs.appendChild(inputItem);
             });
