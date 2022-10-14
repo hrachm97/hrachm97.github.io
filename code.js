@@ -1,5 +1,3 @@
-//Mariam I love you
-
 function FileInput(set, shotItem) {
     
     const container = document.createElement("input");
