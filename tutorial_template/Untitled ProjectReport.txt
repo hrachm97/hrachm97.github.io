@@ -1,0 +1,105 @@
+Report created: 
+	5/16/2022	10:48:08 AM
+
+Project name: Untitled Project.aep
+
+Source files collected to: 
+	E:\Hrach\Automatization\tutorial template
+
+Source files collected: All
+
+Collected comps:  
+	main
+	text 1
+	mockup
+	texts
+	text 2
+	text 3
+	text 4
+	text 5
+	text 6
+	text 7
+	text 8
+	text 9
+	text 10
+	
+Number of collected files:  56
+
+Size of collected files:  24.9 MB
+
+Collected source files: 
+	E:\Hrach\works\idram\tutorial\alias_rus\project\(Footage)\background.jpg
+	E:\Hrach\works\idram\tutorial\alias_rus\project\(Footage)\Data.json
+	E:\Hrach\works\idram\tutorial\alias_rus\project\(Footage)\mockups\galaxyS20.png
+	E:\Hrach\works\idram\tutorial\alias_rus\project\(Footage)\mockups\mockup1.png
+	E:\Hrach\works\idram\tutorial\alias_rus\project\(Footage)\shots.json
+	E:\Hrach\works\idram\tutorial\alias_rus\project\(Footage)\shots\shot1.jpg
+	E:\Hrach\works\idram\tutorial\alias_rus\project\(Footage)\shots\shot10.jpg
+	E:\Hrach\works\idram\tutorial\alias_rus\project\(Footage)\shots\shot11.jpg
+	E:\Hrach\works\idram\tutorial\alias_rus\project\(Footage)\shots\shot12.jpg
+	E:\Hrach\works\idram\tutorial\alias_rus\project\(Footage)\shots\shot13.jpg
+	E:\Hrach\works\idram\tutorial\alias_rus\project\(Footage)\shots\shot14.jpg
+	E:\Hrach\works\idram\tutorial\alias_rus\project\(Footage)\shots\shot15.jpg
+	E:\Hrach\works\idram\tutorial\alias_rus\project\(Footage)\shots\shot16.jpg
+	E:\Hrach\works\idram\tutorial\alias_rus\project\(Footage)\shots\shot17.jpg
+	E:\Hrach\works\idram\tutorial\alias_rus\project\(Footage)\shots\shot18.jpg
+	E:\Hrach\works\idram\tutorial\alias_rus\project\(Footage)\shots\shot19.jpg
+	E:\Hrach\works\idram\tutorial\alias_rus\project\(Footage)\shots\shot2.jpg
+	E:\Hrach\works\idram\tutorial\alias_rus\project\(Footage)\shots\shot20.jpg
+	E:\Hrach\works\idram\tutorial\alias_rus\project\(Footage)\shots\shot21.jpg
+	E:\Hrach\works\idram\tutorial\alias_rus\project\(Footage)\shots\shot22.jpg
+	E:\Hrach\works\idram\tutorial\alias_rus\project\(Footage)\shots\shot23.jpg
+	E:\Hrach\works\idram\tutorial\alias_rus\project\(Footage)\shots\shot24.jpg
+	E:\Hrach\works\idram\tutorial\alias_rus\project\(Footage)\shots\shot25.jpg
+	E:\Hrach\works\idram\tutorial\alias_rus\project\(Footage)\shots\shot26.jpg
+	E:\Hrach\works\idram\tutorial\alias_rus\project\(Footage)\shots\shot27.jpg
+	E:\Hrach\works\idram\tutorial\alias_rus\project\(Footage)\shots\shot28.jpg
+	E:\Hrach\works\idram\tutorial\alias_rus\project\(Footage)\shots\shot29.jpg
+	E:\Hrach\works\idram\tutorial\alias_rus\project\(Footage)\shots\shot3.jpg
+	E:\Hrach\works\idram\tutorial\alias_rus\project\(Footage)\shots\shot30.jpg
+	E:\Hrach\works\idram\tutorial\alias_rus\project\(Footage)\shots\shot31.jpg
+	E:\Hrach\works\idram\tutorial\alias_rus\project\(Footage)\shots\shot32.jpg
+	E:\Hrach\works\idram\tutorial\alias_rus\project\(Footage)\shots\shot33.jpg
+	E:\Hrach\works\idram\tutorial\alias_rus\project\(Footage)\shots\shot34.jpg
+	E:\Hrach\works\idram\tutorial\alias_rus\project\(Footage)\shots\shot35.jpg
+	E:\Hrach\works\idram\tutorial\alias_rus\project\(Footage)\shots\shot36.jpg
+	E:\Hrach\works\idram\tutorial\alias_rus\project\(Footage)\shots\shot37.jpg
+	E:\Hrach\works\idram\tutorial\alias_rus\project\(Footage)\shots\shot38.jpg
+	E:\Hrach\works\idram\tutorial\alias_rus\project\(Footage)\shots\shot39.jpg
+	E:\Hrach\works\idram\tutorial\alias_rus\project\(Footage)\shots\shot4.jpg
+	E:\Hrach\works\idram\tutorial\alias_rus\project\(Footage)\shots\shot40.jpg
+	E:\Hrach\works\idram\tutorial\alias_rus\project\(Footage)\shots\shot41.jpg
+	E:\Hrach\works\idram\tutorial\alias_rus\project\(Footage)\shots\shot42.jpg
+	E:\Hrach\works\idram\tutorial\alias_rus\project\(Footage)\shots\shot43.jpg
+	E:\Hrach\works\idram\tutorial\alias_rus\project\(Footage)\shots\shot44.jpg
+	E:\Hrach\works\idram\tutorial\alias_rus\project\(Footage)\shots\shot45.jpg
+	E:\Hrach\works\idram\tutorial\alias_rus\project\(Footage)\shots\shot46.jpg
+	E:\Hrach\works\idram\tutorial\alias_rus\project\(Footage)\shots\shot47.jpg
+	E:\Hrach\works\idram\tutorial\alias_rus\project\(Footage)\shots\shot48.jpg
+	E:\Hrach\works\idram\tutorial\alias_rus\project\(Footage)\shots\shot49.jpg
+	E:\Hrach\works\idram\tutorial\alias_rus\project\(Footage)\shots\shot5.jpg
+	E:\Hrach\works\idram\tutorial\alias_rus\project\(Footage)\shots\shot50.jpg
+	E:\Hrach\works\idram\tutorial\alias_rus\project\(Footage)\shots\shot6.jpg
+	E:\Hrach\works\idram\tutorial\alias_rus\project\(Footage)\shots\shot7.jpg
+	E:\Hrach\works\idram\tutorial\alias_rus\project\(Footage)\shots\shot8.jpg
+	E:\Hrach\works\idram\tutorial\alias_rus\project\(Footage)\shots\shot9.jpg
+	E:\Hrach\works\idram\tutorial\alias_rus\project\(Footage)\voiceover.wav
+	
+Rendering plug-ins:
+	Classic 3D
+	
+Effects used:  4
+
+Effect:  
+	
+Effect:  Color Control
+	
+Effect:  Paint
+	
+Effect:  Slider Control
+	
+
+Layer:  Text Layer
+	External dependencies:  
+		Font family: “Mardoto”, Font style: “Bold”
+

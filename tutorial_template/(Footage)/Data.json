@@ -1,0 +1,11 @@
+{
+    "screen_margins" : {
+        "iPhone": [50, 45],
+        "GalaxyS20": [51.5, 38]
+    },
+    "scale_amounts" : {
+        "full": 40,
+        "medium": 60,
+        "close": 80
+    }
+}
