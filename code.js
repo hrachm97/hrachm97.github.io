@@ -71,10 +71,14 @@ function Align(set) {
     input.className = "alignSlider";
     input.type = "range";
     input.style.margin = "0px 10px";
-
-    centerize.onclick = () => {
+    
+    this.reset = () => {
         set(0);
         input.value = 50;
+    }
+
+    centerize.onclick = () => {
+        this.reset();
     }
     
     const positive = document.createElement("label");
@@ -482,13 +486,22 @@ function ShotItem(display, timeline, getCoordinate, updateIndexes, instance) {
         else this.duration = +value;
         return this.duration;
     }
-    this.setType = (_type) => {
-        this.type = +_type;
-        display.setImg(file.files[0], this.type, this.align);
-    }
     this.setAlign = (_align) => {
         this.align = +_align;
-        display.setImg(file.files[0], this.type, this.align);
+        display.setPos(this.align, this.type);
+    }
+
+    const align = new Align(this.setAlign);
+
+    this.setType = (_type) => {
+        this.type = +_type;
+        if (this.type === 1) {
+            display.setPos(0, this.type);
+            align.reset();
+        } else {
+            display.setPos(this.align, this.type);
+        }
+
     }
     this.setTouch = (x,y) => {
         if(x) {
@@ -587,7 +600,6 @@ function ShotItem(display, timeline, getCoordinate, updateIndexes, instance) {
     const type = new Type(this.setType);
     container.appendChild(type.getContainer());
 
-    const align = new Align(this.setAlign);
     container.appendChild(align.getContainer());
 
     const touch = new Touch(this.setTouch, getCoordinate);
@@ -954,12 +966,22 @@ function Display(set, scale = 1) {
     mockup.style.width = "20.5%";
     mockup.style.height = "79%";
     mockup.style.transform = "scale(1)";
+    mockup.style.position = "relative";
     
-    this.setImg = (file, shotType = 1, align = 0) => {
+    this.setImg = (file) => {
         if(file) img.src = URL.createObjectURL(file);
         else img.src = "";
-        mockup.style.transform = `scale(${1 + (shotType - 1) / 2})`;
-        mockup.style.transformOrigin = `50% ${(1 - align) * 50}%`;
+    }
+    
+    this.setPos = (align = 0, shotType = 1) => {
+        if(shotType === 1) {
+            mockup.style.transform = `scale(1)`; //reset
+            mockup.style.left = align * 25 + '%';
+        } else {
+            mockup.style.left = 0; //reset
+            mockup.style.transform = `scale(${1 + (shotType - 1) / 2})`;
+            mockup.style.transformOrigin = `50% ${(1 - align) * 50}%`;
+        }  
     }
     
     const inputs = document.createElement("div");
@@ -1045,6 +1067,8 @@ function App() {
 
     root.appendChild(display.getContainer());
     root.appendChild(timeline.getContainer());
+
+    return display;
 }
 
-App();
+let display = App();
