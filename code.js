@@ -363,9 +363,9 @@ function InputItem(rmv, getCoordinate, instance) {
         this.setPos(...this.setPos(...getCoordinate()));
     }
 
-    pos.appendChild(setPos);
     pos.appendChild(inputX);
     pos.appendChild(inputY);
+    pos.appendChild(setPos);
 
     const form = document.createElement("form");
 
@@ -393,11 +393,6 @@ function InputItem(rmv, getCoordinate, instance) {
     container.appendChild(pos);
     container.appendChild(form);
     container.appendChild(remove);
-
-    form.onsubmit = (e) => {
-        e.preventDefault();
-        this.setText(srcText.value, fontSize.value, color.value);
-    }
     
     form.childNodes.forEach((element) => {
         element.onchange = () => {
@@ -522,6 +517,7 @@ function ShotItem(display, timeline, getCoordinate, updateIndexes, instance) {
         else {
             this.text = (new TextItem(text, animN, _color)).values;
         }
+        display.setText(text, _color);
     }
     this.addInput = (_input) => {
         if(this.input === undefined) this.input = [];
@@ -547,8 +543,10 @@ function ShotItem(display, timeline, getCoordinate, updateIndexes, instance) {
         if(selected) container.style.outlineStyle = "none";
         else {
             container.style.outlineStyle = "solid";
-            display.setImg(file.files[0], this.type, this.align);
+            display.setImg(file.files[0]);
             display.rendInputs(this);
+            display.setPos(this.align, this.type);
+            display.setText(this.text[0], this.text[2])
         }
         selected = !selected;
         terminate = false;
@@ -636,7 +634,7 @@ function ShotItem(display, timeline, getCoordinate, updateIndexes, instance) {
     }
 
     inputs.childNodes.forEach( item => {
-        item.onchange = () => {
+        item.onchange = item.onclick = () => {
             display.rendInputs(this);
         }
     })
@@ -891,23 +889,22 @@ function Coordinate(x = 0, y = 0) {
 function Display(set, scale = 1) {
     const container = document.createElement("div");
     container.className = "display";
+    container.position = "relative";
     container.style.overflow = "auto";
     container.style.minHeight = "400px";
     container.style.maxHeight = "700px";
     const composition = document.createElement("div");
+    composition.style.display = "flex";
     composition.style.margin = "20px auto";
     composition.style.width = "640px";
     composition.style.height = "360px";
     composition.style.outline = "2px gray solid";
     composition.style.overflow = "hidden";
-
-    const mockup = document.createElement("div");
-    mockup.className = "mockup";
-
+    
     const zoomIcons = document.createElement("div");
     zoomIcons.style.position = "absolute";
     zoomIcons.style.top = 0;
-
+    
     const plus = document.createElement("button");
     const minus = document.createElement("button");
     plus.style.padding = minus.style.padding = "0px 18px";
@@ -934,8 +931,8 @@ function Display(set, scale = 1) {
                 mockupImg.style.top = "-1.8%";
                 mockupImg.style.width = "104%";
                 break;
+            }
         }
-    }
     this.setMockup(1);
 
     this.setBackground = (file) => {
@@ -949,6 +946,9 @@ function Display(set, scale = 1) {
         }
     }
     this.setBackground();
+    
+    const mockup = document.createElement("div");
+    mockup.className = "mockup";
 
     function mouse_position(offset = [0,0]) {
         const width = mockup.getBoundingClientRect().width;
@@ -977,17 +977,6 @@ function Display(set, scale = 1) {
     this.setImg = (file) => {
         if(file) img.src = URL.createObjectURL(file);
         else img.src = "";
-    }
-    
-    this.setPos = (align = 0, shotType = 1) => {
-        if(shotType === 1) {
-            mockup.style.transform = `scale(1)`; //reset
-            mockup.style.left = align * 25 + '%';
-        } else {
-            mockup.style.left = 0; //reset
-            mockup.style.transform = `scale(${1 + (shotType - 1) / 2})`;
-            mockup.style.transformOrigin = `50% ${(1 - align) * 50}%`;
-        }  
     }
     
     const inputs = document.createElement("div");
@@ -1034,19 +1023,58 @@ function Display(set, scale = 1) {
     plus.onclick = () => {
         zoom(.2);
     }
-
+    
     minus.onclick = () => {
         zoom(-0.2);
     }
     
     this.getContainer = () => {
         return container;
+    } 
+    
+    const text = document.createElement("div");
+    const srcText = document.createElement("h1");
+    text.appendChild(srcText);
+    text.style.display = "flex";
+    text.style.textAlign = "center";
+    text.style.alignItems = "center";
+
+    this.setText = (src, color) => {
+        srcText.innerHTML = src;
+        srcText.style.width = "100%";
+        srcText.style.color = color;
+    }
+
+    function alignMockup(a) {
+        a = Math.abs(a);
+        let differernce = (100 - 20.5)/2 - 15;
+        mockup.style.margin = `6% ${(1 - a) * differernce + 15}%`;
+        text.style.display = (a < 1) ? "none" : "flex";
+        text.style.width = `${100 - 3*15 - 20.5}%`;
+        text.style.margin = `6% 0%`;
+    }
+
+    alignMockup(0);
+
+    this.setPos = (align = 0, shotType = 1) => {
+        
+        if(shotType === 1) {
+            mockup.style.transform = `scale(1)`; //reset
+            alignMockup(align);
+            composition.style.flexDirection = (align < 0) ? "row" : "row-reverse";
+        } else {
+            text.style.display = "none";
+            mockup.style.margin = "auto";
+            mockup.style.transform = `scale(${1 + (shotType - 1) / 2})`;
+            mockup.style.transformOrigin = `50% ${(1 - align) * 50}%`;
+        }  
     }
 
     mockup.appendChild(img);
     mockup.appendChild(mockupImg);
     mockup.appendChild(inputs);
     composition.appendChild(mockup);
+    composition.appendChild(text);
     zoomIcons.appendChild(minus);
     zoomIcons.appendChild(plus);
     container.appendChild(composition);
