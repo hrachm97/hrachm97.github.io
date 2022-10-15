@@ -150,14 +150,22 @@ function Touch(setTouch, getCoordinate) {
     const button = document.createElement("button");
     button.innerHTML = "Set";
 
+    const rmv = document.createElement("button");
+    rmv.innerHTML = "Remove";
+
     const value = document.createElement("span");
     value.className = "touch";
 
     container.appendChild(button);
+    container.appendChild(rmv);
     container.appendChild(value);
 
     button.onclick = () => {
         value.innerHTML = setTouch(...getCoordinate());
+    }
+
+    rmv.onclick = () => {
+        value.innerHTML = setTouch();
     }
 
     this.setValue = (x, y) => {
@@ -277,11 +285,7 @@ function InputItem(rmv, getCoordinate, instance) {
     let textItem;
     if(instance instanceof InputItem) {
         this.pos = instance.pos;
-        textItem = new TextKernel(
-            ...instance.text//[0], 
-            // instance.text[1],
-            // instance.text[2]
-        );
+        textItem = new TextKernel(...instance.text);
 
         this.text = textItem.values;
         this.typing = instance.typing;
@@ -324,23 +328,23 @@ function InputItem(rmv, getCoordinate, instance) {
     
     const pos = document.createElement("span");
     pos.style.display = "block";
-    const setX = document.createElement("input");
-    const setY = document.createElement("input");
-    setX.type = setY.type = "number";
-    setX.style.width = setY.style.width = "40px";
-    setX.step = setY.step = ".1";
-    setX.value = this.pos[0];
-    setY.value = this.pos[1];
-    setX.onchange = () => {
-        this.pos[0] = setX.value;
+    const inputX = document.createElement("input");
+    const inputY = document.createElement("input");
+    inputX.type = inputY.type = "number";
+    inputX.style.width = inputY.style.width = "40px";
+    inputX.step = inputY.step = ".1";
+    inputX.value = this.pos[0];
+    inputY.value = this.pos[1];
+    inputX.onchange = () => {
+        this.pos[0] = +inputX.value;
     }
-    setY.onchange = () => {
-        this.pos[1] = setY.value;
+    inputY.onchange = () => {
+        this.pos[1] = +inputY.value;
     }
 
     this.setPos = (x, y) => {
-        setX.value = this.setX(x);
-        setY.value = this.setY(y);
+        inputX.value = this.setX(x);
+        inputY.value = this.setY(y);
         
         return this.pos;
     }
@@ -352,8 +356,8 @@ function InputItem(rmv, getCoordinate, instance) {
     }
 
     pos.appendChild(setPos);
-    pos.appendChild(setX);
-    pos.appendChild(setY);
+    pos.appendChild(inputX);
+    pos.appendChild(inputY);
 
     const form = document.createElement("form");
 
@@ -487,8 +491,12 @@ function ShotItem(display, timeline, getCoordinate, updateIndexes, instance) {
         display.setImg(file.files[0], this.type, this.align);
     }
     this.setTouch = (x,y) => {
-        this.touch = [x, y];
-        return this.touch;
+        if(x) {
+            this.touch = [x, y];
+            return this.touch;
+        }
+        delete this.touch;
+        return "";
     }
     this.setText = (text, animN, _color) => {
         if(text === "") delete this.text;
