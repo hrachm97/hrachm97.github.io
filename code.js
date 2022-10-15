@@ -40,9 +40,6 @@ function Type(set) {
     
     input.onchange = () => {
         set(input.value);
-        let parent = container.parentNode;
-        parent.querySelector("#positive").innerHTML = input.value == 1 ? "Right" : "Top";
-        parent.querySelector("#negative").innerHTML = input.value == 1 ? "Left" : "Bottom";
     }
 
     this.setValue = (value) => {
@@ -62,23 +59,23 @@ function Align(set) {
     container.style.marginBottom = "10px";
     container.innerHTML = "Align: ";
     
-    const centerize = document.createElement("button");
-    centerize.style.margin = "2px 20px";
+    const centerizeButton = document.createElement("button");
+    centerizeButton.style.margin = "2px 20px";
 
-    centerize.innerHTML = "centerize";
+    centerizeButton.innerHTML = "centerize";
     
     const input = document.createElement("input");
     input.className = "alignSlider";
     input.type = "range";
     input.style.margin = "0px 10px";
     
-    this.reset = () => {
+    this.centerize = () => {
         set(0);
         input.value = 50;
     }
 
-    centerize.onclick = () => {
-        this.reset();
+    centerizeButton.onclick = () => {
+        this.centerize();
     }
     
     const positive = document.createElement("label");
@@ -87,8 +84,15 @@ function Align(set) {
     negative.id = "negative";
     positive.style.width = negative.style.width = "50px"; // doesnt't work
     
-    positive.innerHTML = "Right";
-    negative.innerHTML = "Left";
+    this.setHorizontal = () => {
+        positive.innerHTML = "Right";
+        negative.innerHTML = "Left";
+    }
+    this.setVertical = () => {
+        positive.innerHTML = "Top";
+        negative.innerHTML = "Bottop";
+    }
+    this.setHorizontal();
 
     positive.onclick = () => {
         let alignControl = outside.checked ? 3 : 1;
@@ -113,7 +117,7 @@ function Align(set) {
     range.appendChild(positive);
     range.appendChild(outside);
 
-    container.appendChild(centerize);
+    container.appendChild(centerizeButton);
     container.appendChild(range);
 
     let percentToUnit = (inputValue) => {
@@ -497,8 +501,10 @@ function ShotItem(display, timeline, getCoordinate, updateIndexes, instance) {
         this.type = +_type;
         if (this.type === 1) {
             display.setPos(0, this.type);
-            align.reset();
+            align.centerize();
+            align.setHorizontal();
         } else {
+            align.setVertical();
             display.setPos(this.align, this.type);
         }
 
@@ -547,14 +553,6 @@ function ShotItem(display, timeline, getCoordinate, updateIndexes, instance) {
         selected = !selected;
         terminate = false;
     }
-
-    this.setIndex = () => {
-        container.querySelector(".index").innerHTML = timeline.shots.indexOf(this) + 1;
-    }
-
-    setTimeout(() => {
-        this.setIndex();
-    }, 0); // to execute after the construction of this object
     
     container.style.display = "inline-block";
     container.style.position = "relative";
@@ -592,11 +590,19 @@ function ShotItem(display, timeline, getCoordinate, updateIndexes, instance) {
     index.style.display = "inline";
     index.style.marginRight = "10px";
     index.style.position = "relative";
+
+    this.setIndex = () => {
+        index.innerHTML = timeline.shots.indexOf(this) + 1;
+    }
+
+    setTimeout(() => {
+        this.setIndex();
+    }, 0); // to execute after the construction of this object
     
     container.appendChild(x);
     container.appendChild(index);
     container.appendChild(file);
-
+    
     const type = new Type(this.setType);
     container.appendChild(type.getContainer());
 
@@ -604,16 +610,16 @@ function ShotItem(display, timeline, getCoordinate, updateIndexes, instance) {
 
     const touch = new Touch(this.setTouch, getCoordinate);
     container.appendChild(touch.getContainer());
-
+    
     const text = new TextItem("", 0, "#ffffff", this.setText);
     container.appendChild(text.getContainer());
-
+    
     const inputs = Inputs(this.addInput, this.rmvInput, getCoordinate);
     container.appendChild(inputs);
-
+    
     const duration = Duration(this.setDuration, this.duration);
     container.appendChild(duration);
-
+    
     this.getDuration = () => {
         return duration;
     }
@@ -1067,8 +1073,6 @@ function App() {
 
     root.appendChild(display.getContainer());
     root.appendChild(timeline.getContainer());
-
-    return display;
 }
 
-let display = App();
+App();
