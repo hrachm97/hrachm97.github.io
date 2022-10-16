@@ -24,6 +24,7 @@ function FileInput(set, shotItem) {
 function Type(set) {
     const container = document.createElement("div");
     container.style.display = "block";
+    container.style.width = "40%";
     container.style.position = "relative";
     container.style.marginBottom = "10px";
     container.innerHTML = "Type: ";
@@ -152,6 +153,7 @@ function Touch(setTouch, getCoordinate) {
     const container = document.createElement("div");
     container.style.display = "block";
     container.style.position = "relative";
+    container.style.width = "60%";
     container.style.marginBottom = "10px";
     container.innerHTML = "Touch: ";
 
@@ -186,7 +188,7 @@ function Touch(setTouch, getCoordinate) {
     }
 }
 
-function TextKernel(srcText = "", number = 0, _color = "#ffffff", placeholder = "type text...") {
+function TextKernel(srcText = "", _color = "#ffffff", placeholder = "type text...") {
     const input = document.createElement("input");
     input.className = "srcText";
     input.style.display = "block";
@@ -195,14 +197,6 @@ function TextKernel(srcText = "", number = 0, _color = "#ffffff", placeholder = 
     input.value = srcText;
     input.placeholder = placeholder;
 
-    const numItem = document.createElement("input");
-    numItem.className = "textNum";
-    numItem.style.display = "inline-block";
-    numItem.style.position = "relative";
-    numItem.type = "number";
-    numItem.value = number;
-    numItem.style.width = "45px";
-
     const color = document.createElement("input");
     color.className = "textColor";
     color.style.display = "inline-block";
@@ -210,33 +204,33 @@ function TextKernel(srcText = "", number = 0, _color = "#ffffff", placeholder = 
     color.type = "color";
     color.value = _color;
 
-    this.values = [srcText, +number, _color];
+    this.values = [srcText, _color];
 
     this.getElements = () => {
-        return [input, numItem, color]
+        return [input, color]
     }
 }
 
 function TextItem(srcText = "", animN = 0, _color = "#ffffff", set = () => undefined) {
-    const container = document.createElement("form");
+    TextKernel.call(this, srcText, _color);
+    const container = document.createElement("div");
     container.style.display = "inline-block";
     container.style.position = "relative";
     container.style.marginBottom = "10px";
     container.innerHTML = "Text: ";
 
-    const button = document.createElement("button");
-    button.innerHTML = "Add";
+    const animation = document.createElement("select");
+    animation.innerHTML = `
+        <option value=0>set</option>
+        <option value=1>Anim 1</option>
+    `;
 
-    const kernel = new TextKernel(srcText, animN, _color);
-
-    const [input, animation, color] = kernel.getElements();
+    const [input, color] = this.getElements();
     container.appendChild(input);
     container.appendChild(animation);
     container.appendChild(color);
-    container.appendChild(button);
 
-    container.onsubmit = (e) => {
-        e.preventDefault();
+    container.onchange = () => {
         set(input.value, animation.value, color.value);
     }
     
@@ -289,17 +283,46 @@ function Duration(set, init) {
     return container;
 }
 
+function InputTextItem(srcText = "", fontSize = 22, _color = "#ffffff") {
+    TextKernel.call(this, srcText, _color, "Type input...");
+    
+    const size = document.createElement("input");
+    size.className = "textNum";
+    size.style.display = "inline-block";
+    size.style.position = "relative";
+    size.type = "number";
+    size.value = fontSize;
+    size.style.width = "45px";
+    size.step = ".1";
+
+    this.getSize = () => {
+        return size;
+    }
+
+    const container = document.createElement("span");
+    const [input, color] = this.getElements();
+    container.appendChild(input);
+    container.appendChild(size);
+    container.appendChild(color);
+
+    this.values = [srcText, +fontSize, _color];
+
+    this.getContainer = () => {
+        return container;
+    }
+}
+
 function InputItem(rmv, getCoordinate, instance) {
     let textItem;
     if(instance instanceof InputItem) {
-        this.pos = instance.pos;
-        textItem = new TextKernel(...instance.text);
+        this.pos = [instance.pos[0], instance.pos[1]];
+        textItem = new InputTextItem(...instance.text);
 
         this.text = textItem.values;
         this.typing = instance.typing;
         this.cursor = instance.cursor;
     } else {
-        textItem = new TextKernel("", 22, "#ffffff", "type input...");
+        textItem = new InputTextItem();
         this.text = textItem.values;
         this.typing = false;
         this.cursor = false;
@@ -382,17 +405,16 @@ function InputItem(rmv, getCoordinate, instance) {
         container.style.display = "none";
     }
 
-    const [srcText, fontSize, color] = textItem.getElements();
-    fontSize.step = ".1";
-    form.appendChild(srcText);
-    form.appendChild(fontSize);
-    form.appendChild(color);
+    form.appendChild(textItem.getContainer());
     form.appendChild(typing);
     form.appendChild(cursor);
     
     container.appendChild(pos);
     container.appendChild(form);
     container.appendChild(remove);
+
+    const [srcText, color] = textItem.getElements();
+    const fontSize = textItem.getSize();
     
     form.childNodes.forEach((element) => {
         element.onchange = () => {
@@ -403,7 +425,7 @@ function InputItem(rmv, getCoordinate, instance) {
     });
 
     this.getTextAttributes = () => {
-        return textItem.getElements();
+        return [srcText, fontSize, color];
     }
 
     this.getContainer = () => {
@@ -413,12 +435,35 @@ function InputItem(rmv, getCoordinate, instance) {
     return this;
 }
 
-function Inputs(add, rmv, getCoordinate) {
+function clickArea(x,y, click) {
+    area = document.createElement("button");
+    area.style.border = "none";
+
+    area.style.position = "absolute";
+    area.style.width = `calc(100% - ${x}px)`;
+    area.style.height = `calc(100% - ${y}px)`;
+    area.style.zIndex = 0;
+
+    area.className = "area";
+    area.style.backgroundColor = "#aaa";
+
+    area.onclick = () => {
+        click();
+    }
+
+    return area;
+}
+
+function Inputs(add, rmv, getCoordinate, select) {
     const container = document.createElement("div");
     container.style.display = "block";
     container.style.width = "280px";
     container.style.position = "relative";
     container.style.marginBottom = "10px";
+
+    container.onclick = () => {
+        select(false);
+    }
 
     const header = document.createElement("div");
     header.innerHTML = "Inputs: ";
@@ -431,9 +476,9 @@ function Inputs(add, rmv, getCoordinate) {
     scrollBar.style.position = "relative";
     scrollBar.style.overflow = "auto";
     scrollBar.style.whiteSpace = "nowrap";
-
+    
     header.appendChild(button);
-
+    
     button.onclick = () => {
         let newItem = new InputItem(rmv, getCoordinate);
         add(newItem);
@@ -442,7 +487,7 @@ function Inputs(add, rmv, getCoordinate) {
 
     container.appendChild(header);
     container.appendChild(scrollBar);
-
+    
     return container;
 }
 
@@ -451,18 +496,6 @@ function makeSelectable(container){
     container.style.outlineWidth = "3px";
     container.style.outlineColor = "blue";
     container.style.outlineStyle = "none";
-}
-
-function selectArea() {
-    container = document.createElement("button");
-    container.style.border = "none";
-
-    container.style.position = "absolute";
-    container.style.width = "calc(100% - 20px)";
-    container.style.height = "calc(100% - 20px)";
-    container.style.zIndex = 0;
-
-    return container;
 }
 
 function ShotItem(display, timeline, getCoordinate, updateIndexes, instance) {
@@ -532,24 +565,22 @@ function ShotItem(display, timeline, getCoordinate, updateIndexes, instance) {
         display.rendInputs(this);
     }
 
-    let terminate = false;
-    this.select = (manual = true) => {
+    this.select = (unselectable = true) => {
         for(item of timeline.shots) {
-            if(item.isSelected() && !terminate && item !== this) {
-                terminate = true;
-                item.select();
+            if(item.isSelected() && item !== this) {             
+                item.select(true);
+                break;
             }
         }
-        if(selected) container.style.outlineStyle = "none";
+        if(selected && unselectable) container.style.outlineStyle = "none";
         else {
             container.style.outlineStyle = "solid";
             display.setImg(file.files[0]);
             display.rendInputs(this);
             display.setPos(this.align, this.type);
-            display.setText(this.text[0], this.text[2])
+            if (this.text) display.setText(this.text[0], this.text[2]);
         }
-        selected = !selected;
-        terminate = false;
+        selected = unselectable ? !selected : true;
     }
     
     container.style.display = "inline-block";
@@ -574,14 +605,12 @@ function ShotItem(display, timeline, getCoordinate, updateIndexes, instance) {
         updateIndexes();
     }
     
-    const clickArea = selectArea();
-    clickArea.className = "clickArea";
-    clickArea.style.backgroundColor = "#aaa";
-    container.appendChild(clickArea);
+    const selectArea = clickArea(20,20);
     
-    clickArea.onclick = () => {
+    selectArea.onclick = () => {
         this.select();
     }
+    container.appendChild(selectArea);
     
     const index = document.createElement("h3");
     index.className = "index";
@@ -612,7 +641,7 @@ function ShotItem(display, timeline, getCoordinate, updateIndexes, instance) {
     const text = new TextItem("", 0, "#ffffff", this.setText);
     container.appendChild(text.getContainer());
     
-    const inputs = Inputs(this.addInput, this.rmvInput, getCoordinate);
+    const inputs = Inputs(this.addInput, this.rmvInput, getCoordinate, this.select);
     container.appendChild(inputs);
     
     const duration = Duration(this.setDuration, this.duration);
@@ -634,7 +663,7 @@ function ShotItem(display, timeline, getCoordinate, updateIndexes, instance) {
     }
 
     inputs.childNodes.forEach( item => {
-        item.onchange = item.onclick = () => {
+        item.onchange = () => {
             display.rendInputs(this);
         }
     })
