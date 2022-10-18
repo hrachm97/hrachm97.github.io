@@ -845,7 +845,7 @@ function VoiceOver(shots, getCurrentShot) {
     return container;
 }
 
-function Timeline(display, data, getCoordinate) {
+function Timeline(display, sendData, getCoordinate) {
     this.shots = [];
 
     this.addShot = (shotItem) => {
@@ -882,12 +882,12 @@ function Timeline(display, data, getCoordinate) {
 
     function addJSONevents(shotItem) {
         setTimeout(() => {
-            JSONconatiner.innerHTML = JSON.stringify(data);
+            sendData();
         }, 0);
         shotItem.getContainer().onclick = 
         shotItem.getContainer().onchange = 
         shotItem.getContainer().onsubmit = () => {
-            JSONconatiner.innerHTML = JSON.stringify(data);
+            sendData();
         }
     }
 
@@ -1121,10 +1121,20 @@ function App() {
         mockup: 1
     }
 
+    function sendData() {
+        fetch("/data", {
+            method: "post",
+            headers: {
+                "content-type": "application/json"
+            },
+            body: JSON.stringify(data, undefined, 4)
+        });
+    }
+
     let coordinate = new Coordinate();
 
     const display = new Display(coordinate.set);
-    const timeline = new Timeline(display, data, coordinate.get);
+    const timeline = new Timeline(display, sendData, coordinate.get);
     
     data.shot = timeline.shots;
 
