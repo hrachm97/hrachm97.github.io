@@ -1,0 +1,39 @@
+{
+    "shot": [
+        {
+            "type": 3,
+            "align": 0,
+            "duration": 0,
+            "text": [
+                "asdf",
+                0,
+                "#ffffff"
+            ]
+        },
+        {
+            "type": 1,
+            "align": 0,
+            "duration": 0,
+            "input": [
+                {
+                    "text": [
+                        "asdfasdfasdf",
+                        22,
+                        "#ffffff"
+                    ],
+                    "typing": false,
+                    "cursor": false,
+                    "pos": [
+                        34,
+                        53
+                    ]
+                }
+            ]
+        },
+        {
+            "type": 1,
+            "align": 0
+        }
+    ],
+    "mockup": 1
+}
