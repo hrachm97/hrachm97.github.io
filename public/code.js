@@ -454,7 +454,7 @@ function clickArea(x,y, click) {
     return area;
 }
 
-function Inputs(add, rmv, getCoordinate, select) {
+function Inputs(add, rmv, getCoordinate, thisShot) {
     const container = document.createElement("div");
     container.style.display = "block";
     container.style.width = "280px";
@@ -462,7 +462,7 @@ function Inputs(add, rmv, getCoordinate, select) {
     container.style.marginBottom = "10px";
 
     container.onclick = () => {
-        select(false);
+        thisShot.select(true, false);
     }
 
     const header = document.createElement("div");
@@ -480,7 +480,8 @@ function Inputs(add, rmv, getCoordinate, select) {
     header.appendChild(button);
     
     button.onclick = () => {
-        let newItem = new InputItem(rmv, getCoordinate);
+        let lastItem = thisShot.input ? thisShot.input[thisShot.input.length - 1] : undefined;
+        let newItem = new InputItem(rmv, getCoordinate, lastItem);
         add(newItem);
         scrollBar.appendChild(newItem.getContainer());
     }
@@ -565,10 +566,10 @@ function ShotItem(display, timeline, getCoordinate, updateIndexes, instance) {
         display.rendInputs(this);
     }
 
-    this.select = (unselectable = true) => {
+    this.select = (manual = true, unselectable = true) => {
         for(item of timeline.shots) {
             if(item.isSelected() && item !== this) {             
-                item.select(true);
+                item.select(manual, unselectable);
                 break;
             }
         }
@@ -581,6 +582,8 @@ function ShotItem(display, timeline, getCoordinate, updateIndexes, instance) {
             if (this.text) display.setText(this.text[0], this.text[2]);
         }
         selected = unselectable ? !selected : true;
+
+        if(this.duration && manual) document.querySelector("audio").currentTime = this.duration;
     }
     
     container.style.display = "inline-block";
@@ -641,7 +644,7 @@ function ShotItem(display, timeline, getCoordinate, updateIndexes, instance) {
     const text = new TextItem("", 0, "#ffffff", this.setText);
     container.appendChild(text.getContainer());
     
-    const inputs = Inputs(this.addInput, this.rmvInput, getCoordinate, this.select);
+    const inputs = Inputs(this.addInput, this.rmvInput, getCoordinate, this);
     container.appendChild(inputs);
     
     const duration = Duration(this.setDuration, this.duration);
@@ -823,17 +826,24 @@ function VoiceOver(shots, getCurrentShot) {
             behavior: 'smooth'
         });
     }
-
+    
     item.getContainer().onplay = () => {
         trackPlay();
         selectShotID = setInterval(() => {
             let currentShot = getCurrentShot(item.getContainer().currentTime);
-            if(currentShot) currentShot.select();
+            if(currentShot) currentShot.select(false);
+            if(!currentShot.duration) {
+                clearInterval(selectShotID);
+                clearInterval(scrollID);
+                currentShot.select(false, false);
+            }
         },200);
-        scrollID = setInterval(() => {
+        scrollID = setInterval(() => 
+        {   
             trackPlay();
         },200);
     }
+
     item.getContainer().onpause = () => {
         clearInterval(selectShotID);
         clearInterval(scrollID);
@@ -862,12 +872,13 @@ function Timeline(display, data, getCoordinate) {
         let arr = this.shots;
         for(i in arr) {
             let start = +i ? arr[i - 1].duration : 0;
-            let end = arr[i].duration;
+            let end = arr[i].duration ? arr[i].duration : Infinity;
 
             if(time >= start && time < end) {
                 return getindex ? i : arr[i];
             }
         }
+        
         if(getindex) return -1;
     }
 
