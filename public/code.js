@@ -29,15 +29,27 @@ function ScreenInput(set, shotItem) {
     container.style.position = "relative";
     container.style.marginBottom = "10px";
 
+    this.sendData = () => {
+        fetch("/screen", {
+            method: "post",
+            headers: {
+                "content-type": "image/jpeg",
+                "name" : shotItem.getindex()
+            },
+            body: container.files[0]
+        });
+    }
+    
     container.onchange = () => {
+        this.sendData();
         set(
-            container.files[0], 
+            container.files[0],
             shotItem.type = 1, 
             shotItem.align = 0
         );
     }
-
-    return container;
+    
+    this.getContainer = () => container;
 }
 
 function Type(set) {
@@ -527,20 +539,22 @@ function makeSelectable(container){
 }
 
 function ShotItem(display, timeline, getCoordinate, instance) {
-    let file = ScreenInput(display.setImg, this);
+    let file = new ScreenInput(display.setImg, this);
+
+    // this.setImg = (link) => {
+    //     file.getContainer().files[0] = URL.revokeObjectURL(link);
+    // } canceled: can't set the input element a value through js
 
     const container = document.createElement("div");
     
-    this.getFile = () => {
-        return file;
-    }
+    this.getFile = () => file;
     
     let selected = false;
     
     this.isSelected = () => {
         return selected;
     }
-
+    
     this.setDuration = (value) => {
         if(!value) this.duration = +document.querySelector("audio").currentTime.toFixed(1);
         else this.duration = +value;
@@ -550,7 +564,7 @@ function ShotItem(display, timeline, getCoordinate, instance) {
         this.align = +_align;
         display.setPos(this.align, this.type);
     }
-
+    
     const align = new Align(this.setAlign);
 
     this.setType = (_type, manual = true) => {
@@ -565,7 +579,7 @@ function ShotItem(display, timeline, getCoordinate, instance) {
             align.setVertical();
             display.setPos(this.align, this.type);
         }
-
+        
     }
     this.setTouch = (x,y) => {
         if(x) {
@@ -595,6 +609,8 @@ function ShotItem(display, timeline, getCoordinate, instance) {
         display.rendInputs(this);
     }
 
+    this.getindex = () => +timeline.shots.indexOf(this);
+
     this.select = (manual = true, unselectable = true) => {
         for(item of timeline.shots) {
             if(item.isSelected() && item !== this) {             
@@ -605,12 +621,24 @@ function ShotItem(display, timeline, getCoordinate, instance) {
         if(selected && unselectable) container.style.outlineStyle = "none";
         else {
             container.style.outlineStyle = "solid";
-            display.setImg(file.files[0]);
+            if(file.getContainer().files.length) display.setImg(file.getContainer().files[0]);
+            else {
+                try {
+                    display.setImg(`tutorial_template/(Footage)/shots/${this.getindex()}.jpeg`);
+                    
+                } catch {
+                    
+                    display.setImg();
+                }
+            } 
+
             display.rendInputs(this);
             display.setPos(this.align, this.type);
             if (this.text) display.setText(this.text[0], this.text[2]);
         }
         selected = unselectable ? !selected : true;
+
+        //if(!selected) display.setImg(); //clear
 
         if(this.duration && manual) document.querySelector("audio").currentTime = this.duration;
     }
@@ -636,11 +664,18 @@ function ShotItem(display, timeline, getCoordinate, instance) {
             item.setIndex();
         }
     }
+
+    function updateImgs() {
+        for(item of timeline.shots) {
+            if(item.getFile().getContainer().files.length) item.getFile().sendData();
+        }
+    }
     
     x.onclick = () => {
         timeline.rmvShot(this);
         container.style.display = "none";
         updateIndexes();
+        updateImgs();
     }
     
     const selectArea = clickArea(20,20);
@@ -655,9 +690,9 @@ function ShotItem(display, timeline, getCoordinate, instance) {
     index.style.display = "inline";
     index.style.marginRight = "10px";
     index.style.position = "relative";
-
+    
     this.setIndex = () => {
-        index.innerHTML = timeline.shots.indexOf(this) + 1;
+        index.innerHTML = this.getindex() + 1;
     }
 
     setTimeout(() => {
@@ -666,7 +701,7 @@ function ShotItem(display, timeline, getCoordinate, instance) {
     
     container.appendChild(x);
     container.appendChild(index);
-    container.appendChild(file);
+    container.appendChild(file.getContainer());
     
     const type = new Type(this.setType);
     container.appendChild(type.getContainer());
@@ -705,7 +740,8 @@ function ShotItem(display, timeline, getCoordinate, instance) {
     
     if( instance ) {
         if( instance instanceof ShotItem ) {
-            file.files = instance.getFile().files;  
+            file.getContainer().files = instance.getFile().getContainer().files;
+            if(file.getContainer().files.length) setTimeout(file.sendData, 0);
             align.setValue(...instance.getAlign());
         } else {
             align.setValueByUnit(instance.align);
@@ -1060,7 +1096,8 @@ function Display(set, scale = 1) {
     mockup.style.position = "relative";
     
     this.setImg = (file) => {
-        if(file) img.src = URL.createObjectURL(file);
+        if(typeof file === "string") img.src = file;
+        else if(file) img.src = URL.createObjectURL(file);
         else img.src = "";
     }
     

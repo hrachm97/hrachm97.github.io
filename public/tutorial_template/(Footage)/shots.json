@@ -1,24 +1,9 @@
 {
     "shot": [
         {
-            "duration": 0.5,
             "align": 0,
-            "type": 1,
-            "touch": [
-                46,
-                50
-            ]
-        },
-        {
-            "duration": 1.1,
-            "align": -1,
-            "type": 3,
-            "text": [
-                "rewq",
-                0,
-                "#ffffff"
-            ]
+            "type": 1
         }
     ],
-    "mockup": 1
+    "mockup": 2
 }

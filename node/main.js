@@ -14,11 +14,29 @@ app.get("/data", (req, res) => {
     console.log("json sent");
 })
 
+app.get("/imgs", (req, res) => {
+    fs.promises
+        .readdir("../public/tutorial_template/(Footage)/shots").then((files) => {
+            let absoluteFiles = files.map(file => path.resolve("../public/tutorial_template/(Footage)/shots/" + file));
+            res.send(absoluteFiles);
+            console.log(absoluteFiles[0]);
+        })
+    console.log("imgs sent");
+})
+
 app.post("/data", (req, res) => {
     fs.promises
         .writeFile(path.resolve("../public/tutorial_template/(Footage)/shots.json"), req)
         .then(() => {
             res.send("Data received");
+        });
+})
+
+app.post("/screen", (req, res) => {
+    fs.promises
+        .writeFile(path.resolve(`../public/tutorial_template/(Footage)/shots/${req.headers.name}.jpeg`), req)
+        .then(() => {
+            res.send("IMG received");
         });
 })
 
