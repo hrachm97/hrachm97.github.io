@@ -902,11 +902,12 @@ function VoiceOver(shots, getCurrentShot) {
         trackPlay();
         selectShotID = setInterval(() => {
             let currentShot = getCurrentShot(item.getContainer().currentTime);
-            if(currentShot) currentShot.select(false);
-            if(!currentShot.duration) {
+            if(currentShot) {
+                currentShot.select(false);
+                if(currentShot.duration === undefined) currentShot.select(false, false);
+            } else {
                 clearInterval(selectShotID);
                 clearInterval(scrollID);
-                currentShot.select(false, false);
             }
         },200);
         scrollID = setInterval(() => 
