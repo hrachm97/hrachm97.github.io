@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -17,5 +17,275 @@
 </head>
 <body>
     <script src="code.js"></script>
+</body>
+</html> -->
+
+<!DOCTYPE html>
+<html lang="hy">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Դարպասի հաշվիչ</title>
+
+<style>
+body {
+  margin: 0;
+  font-family: system-ui, Arial;
+  background: #fff7f2;
+  color: #222;
+}
+
+.hero {
+  display: flex;
+  gap: 40px;
+  padding: 60px 10%;
+  align-items: center;
+}
+
+.hero h1 {
+  font-size: 42px;
+  margin: 0;
+}
+
+.hero p {
+  color: #666;
+  margin-top: 10px;
+}
+
+.card {
+  width: 420px;
+  background: #fff;
+  padding: 22px;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+  border-top: 6px solid #ff7a00;
+  position: relative;
+}
+
+.row {
+  display: flex;
+  gap: 30px;
+}
+
+label {
+  font-size: 12px;
+}
+
+input {
+  width: 40px;
+  padding: 10px;
+  margin-top: 6px;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+}
+
+button {
+  width: 100%;
+  margin-top: 12px;
+  padding: 12px;
+  border: none;
+  border-radius: 12px;
+  background: #ff7a00;
+  color: white;
+  cursor: pointer;
+}
+
+.result {
+  margin-top: 14px;
+  font-size: 14px;
+  line-height: 1.7;
+  padding-bottom: 60px;
+}
+
+/* PRICE/M² BADGE */
+.sqm-badge {
+  position: absolute;
+  bottom: 14px;
+  right: 14px;
+  background: rgba(255, 122, 0, 0.95);
+  color: white;
+  padding: 10px 12px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 600;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+}
+
+/* SECTIONS */
+.section {
+  padding: 60px 10%;
+}
+</style>
+</head>
+
+<body>
+
+<div class="hero">
+
+  <div>
+    <h1>Master Gate</h1>
+    <p>Հաշվիր քո դարպասի արժեքը 30 վայրկյանում</p>
+  </div>
+
+  <div class="card">
+
+      <div class="row">
+          <label>Լայնություն (մ) 
+            <input value="3.2" id="w" type="number" step="0.1" min="2" max="6" inputmode="decimal">
+          </label>
+          <label>Բարձրություն (մ)
+            <input value="2.5" id="h" type="number" step="0.1" min="1.5" max="4" inputmode="decimal">
+          </label>
+      </div>
+
+    <div style="margin-top:10px;">
+      <label style="display:inline-flex; align-items:center; gap:6px;">
+        Հեռակառավարում
+        <input type="checkbox" id="auto" checked>
+      </label>
+    </div>
+
+    <div>
+      <label style="display:inline-flex; align-items:center; gap:6px; white-space:nowrap;">
+        Դռնակ / կալիտկա
+        <input type="checkbox" id="door">
+      </label>
+    </div>
+
+    <div>
+      <label style="display:inline-flex; align-items:center; gap:6px; white-space:nowrap;">
+        Տեղադրում
+        <input type="checkbox" id="door">
+      </label>
+    </div>
+
+    <button onclick="calc()">Հաշվել</button>
+
+    <div class="result" id="res"></div>
+
+  </div>
+
+</div>
+
+<script>
+
+const products = [
+  { w: 3.2, price: 600000 },
+  { w: 3.7, price: 660000 },
+  { w: 4.2, price: 760000 },
+  { w: 4.5, price: 793000 }
+];
+const stdh = 2.5;
+
+function calc() {
+
+  const w = parseFloat(document.getElementById("w").value);
+  const h = parseFloat(document.getElementById("h").value);
+
+  const auto = document.getElementById("auto").checked;
+  const door = document.getElementById("door").checked;
+
+  let wSelected = products.find(p => p.w === w);
+  let hSelected = stdh === h;
+  let wMatched = !!wSelected;
+  let hMatched = !!hSelected;
+  let assembly = 0;
+
+// validating complects with standard widths and height
+  if (!wSelected) {
+    wSelected = products.find(p => p.w >= w);
+    if (!wSelected) {
+      document.getElementById("res").innerHTML =
+        "Տվյալ լայնության համար անհրաժեշտ է անհատական հաշվարկ";
+      return;
+    } else {
+      assembly = 50000;
+    }
+  }
+
+  let lines = [];
+  let complect = wSelected.price;
+  let total = complect;
+
+// remote 
+  const sqm = w * h;
+  if (!auto) {
+    const motorPrice = (sqm <= 10) ? 147000 : 160000;
+    total -= motorPrice;
+    lines.push(`Կոմպլեկտ - ${(complect-motorPrice).toLocaleString()} AMD`);
+  } else {
+    lines.push(`Կոմպլեկտ - ${(complect).toLocaleString()} AMD`);
+  }
+
+// height
+  let panelHeight = 0.5;
+  let panelPrice = 90000;
+  if (!hSelected) {
+    let panelsCount = h/panelHeight;
+    let panelsDifference = panelsCount - 5;
+    
+    if (panelsDifference>2||panelsDifference<-1) {
+      document.getElementById("res").innerHTML =
+        "Տվյալ բարձրության համար անհրաժեշտ է անհատական հաշվարկ";
+      return;
+    } else {
+      total+= Math.ceil(panelsDifference)*panelPrice * w / 6;
+      if(Math.ceil(panelsDifference) !== 0) {
+        lines.push(`Լրացուցիչ պանել (քանակ և գին) <br>
+          ${Math.ceil(panelsDifference)} հատ ${w} մետր պանել - 
+          ${parseInt(Math.ceil(panelsDifference) * panelPrice * w / 6)}
+          `);
+      }
+      // cuts
+      if(Math.ceil(panelsDifference) === panelsDifference) {
+      } else {
+          //horizontal cuts
+          assembly += 50000;
+      }
+      //vertical cuts
+      if(panelsDifference>0)
+      assembly += Math.ceil(panelsDifference)*10000;
+    }
+  }
+
+  let passingDoor = 200000;
+//assembly
+  if (wMatched&&hMatched) {
+  } else {
+    total += assembly;
+    if(assembly)lines.push("Կտրում - " + assembly/1000 + ",000 AMD");
+  }
+
+    if (door) {
+    total += passingDoor;
+    lines.push("Դռնակ / կալիտկա - 200,000 AMD");
+  }
+
+  // sqm price (without door)
+  const sqmPrice = Math.round(total / sqm);
+
+  const badge = `
+    <div class="sqm-badge">
+      ${sqmPrice.toLocaleString()} AMD / մ²
+    </div>
+  `;
+
+  let html = `
+    <div style="margin-bottom:10px;font-weight:bold;color:#ff7a00;">
+      Արժեքը՝ <br>
+    </div>
+  `;
+
+  html += lines.map(l => `<div>${l}</div>`).join("");
+  html += ` <div style="margin-bottom:10px;font-weight:bold;color:#ff7a00;">
+  Ընդհանուր - ${total.toLocaleString()} AMD
+  </div>`;
+  html += badge;
+
+  document.getElementById("res").innerHTML = html;
+}
+
+</script>
+
 </body>
 </html>
